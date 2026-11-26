@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=text_killer
+GenericName=Text Editor
+Comment=Terminal text editor with an IRC-style interface
+Exec=text_killer %F
+Terminal=true
+Icon=accessories-text-editor
+Categories=Utility;TextEditor;Development;
+Keywords=editor;text;irc;markdown;odt;docx;
+MimeType=text/plain;text/markdown;text/html;text/css;text/x-python;text/x-csrc;text/x-c++src;text/x-shellscript;application/json;application/xml;application/x-yaml;application/rtf;application/vnd.oasis.opendocument.text;application/vnd.openxmlformats-officedocument.wordprocessingml.document;

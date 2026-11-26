@@ -1,0 +1,1830 @@
+==============================================================================
+                              TEXT_KILLER MANUAL
+                                 Version 1.3.0
+          A terminal text editor with an IRC-inspired interface
+==============================================================================
+
+
+CONTENTS
+--------
+   1. Introduction
+   2. Installation and Building
+   3. Starting the Program
+   4. The Screen Layout
+   5. Basic Concepts: Windows, Focus and Modes
+   6. Editing Text
+   7. Selecting, Copying and Pasting
+   8. Undo and Redo
+   9. Searching, Replacing and Jumping to Lines
+  10. Formatting Tools
+  11. Line Tools
+  12. The Options Menu
+  13. The File Browser (Open and Save As)
+  14. Saving, Closing and Quitting
+  15. The Command Line and Slash Commands
+  16. The Window List (Sidebar)
+  17. Mouse Support
+  18. Themes, Page View, Saved Settings and View Options
+  19. File Formats, Documents, Encodings and Line Endings
+  20. Syntax Highlighting and Language Detection
+  21. Automatic Indentation and Smart Editing
+  22. How the Screen Adapts to Window Size
+  23. Messages, the Message Log and Help
+  24. Limits and Known Behaviours
+  25. Troubleshooting
+  26. Quick Reference Card
+
+
+==============================================================================
+1. INTRODUCTION
+==============================================================================
+
+text_killer is a full-screen text editor that runs inside a terminal. Its look
+is modelled on classic IRC (Internet Relay Chat) clients such as irssi,
+WeeChat and mIRC:
+
+  * Open documents are listed down the left side like IRC "channels" or
+    "windows".
+  * A "topic" bar across the top shows the current file.
+  * A status bar near the bottom shows position, language and file details
+    in [bracketed] segments.
+  * An input line at the very bottom works like an IRC chat prompt. You type
+    slash commands such as /open, /save and /find into it.
+
+Main features:
+
+  * Open many documents at once and switch between them from the sidebar.
+  * Syntax highlighting for 93 languages and file types, with special care
+    for plain text, HTML (including embedded CSS and JavaScript), CSS and
+    Python.
+  * Opens office documents and e-books (OpenDocument .odt/.ods/.odp, Word
+    .docx, Excel .xlsx, PowerPoint .pptx, .rtf, .epub, gzip) as editable
+    text, and saves .odt, .docx and .rtf with headings, lists, bold and
+    italic intact.
+  * An options menu that reaches every feature.
+  * A built-in file browser for opening and saving.
+  * Formatting tools (bold, italic, headings, comments, case changes, sorting,
+    reflowing paragraphs, JSON pretty-printing and more).
+  * Reads and writes UTF-8, UTF-8 with BOM, UTF-16 LE/BE and Latin-1, and
+    preserves LF, CRLF or CR line endings.
+  * Binary files open safely as a read-only hex dump.
+  * Mouse support, a system-clipboard bridge (OSC 52) and eleven colour
+    themes chosen from the options menu, with the black-and-red "Crimson"
+    theme as the default.
+  * The layout adjusts automatically when the terminal is resized.
+
+
+==============================================================================
+2. INSTALLATION AND BUILDING
+==============================================================================
+
+Ready-made packages are provided for every major system, so you do not need
+to build anything. Each comes in an installable form (puts text_killer on
+your PATH, adds the manual page, can be uninstalled cleanly) and a portable
+form (a folder you can run from anywhere; nothing installed). Pick ONE file.
+
+WHICH FILE?
+  System                        Installable                    Portable
+  ----------------------------  -----------------------------  -----------------------------
+  Windows 10/11 (64-bit)        ...-windows-x86_64-setup.exe   ...-windows-x86_64.zip
+  macOS (Apple Silicon/Intel)   ...-macos-installer.zip        ...-macos-apple-silicon.zip
+                                                               ...-macos-intel.zip
+  Debian, Ubuntu, Mint          text-killer_..._amd64.deb      ...-linux-x86_64.tar.gz
+  Fedora, RHEL, openSUSE        text_killer-...x86_64.rpm      ...-linux-x86_64.tar.gz
+  Arch, Manjaro, EndeavourOS    text_killer-bin-...-x86_64     ...-linux-x86_64.tar.gz
+                                  .pkg.tar.zst (or PKGBUILD)
+  Raspberry Pi 4/5, ARM         ..._arm64.deb / ...aarch64     ...-linux-arm64.tar.gz
+  servers (64-bit OS)             .rpm / ...-aarch64.pkg...
+  Any other Linux               ...-linux-*.tar.gz + install.sh (same file)
+
+  The Linux programs are statically linked: they need no libraries and work
+  on any 64-bit distribution.
+
+WINDOWS
+  Installer: double-click text_killer-<version>-windows-x86_64-setup.exe.
+  * If SmartScreen says "Windows protected your PC", choose More info >
+    Run anyway (the installer is not code-signed).
+  * It installs for your user only (no administrator rights) into
+    %LOCALAPPDATA%\Programs\text_killer, adds that folder to your PATH,
+    and creates Start-menu entries (text_killer, its manual, uninstall) and
+    an entry in Settings > Apps > Installed apps for uninstalling.
+  * If your PATH is unusually long, the installer leaves it untouched (to
+    avoid any risk of truncating it) and tells you which folder to add.
+  * Open a NEW Windows Terminal or PowerShell window afterwards and type:
+        text_killer myfile.txt
+  * Silent install/uninstall for scripts: setup.exe /S and uninstall.exe /S.
+  Portable: unzip text_killer-<version>-windows-x86_64.zip and run
+  .\text_killer.exe from that folder in Windows Terminal.
+
+MACOS
+  Installer: unzip text_killer-<version>-macos-installer.zip, then
+  right-click (Control-click) install.command and choose Open. A Terminal
+  window opens, asks for your password and installs text_killer to
+  /usr/local/bin with its manual page, choosing the right build for Apple
+  Silicon or Intel automatically. (A plain double-click is refused the
+  first time because the download is not notarized by Apple; right-click >
+  Open is the standard way to allow it.)
+  Prefer a classic .pkg installer? In Terminal run:
+        bash ~/Downloads/text_killer-<version>-macos-installer/build-pkg.sh
+  This uses Apple's own packaging tools to create a universal
+  text_killer-<version>-macos.pkg (for both kinds of Mac) next to it.
+  Uninstall: bash /usr/local/share/doc/text_killer/uninstall.command
+  Portable: see INSTALL.txt in the macos-apple-silicon / macos-intel zips.
+
+DEBIAN / UBUNTU (and derivatives)
+        sudo apt install ./text-killer_<version>_amd64.deb
+  Uninstall:  sudo apt remove text-killer
+
+FEDORA / RHEL / OPENSUSE
+        sudo dnf install ./text_killer-<version>-1.x86_64.rpm
+  (openSUSE: sudo zypper install ./text_killer-<version>-1.x86_64.rpm)
+  Uninstall:  sudo dnf remove text_killer
+
+ARCH LINUX (and derivatives)
+        sudo pacman -U text_killer-bin-<version>-1-x86_64.pkg.tar.zst
+  Or build it yourself from the PKGBUILD: put PKGBUILD and the matching
+  linux .tar.gz in one folder and run  makepkg -si
+  Uninstall:  sudo pacman -R text_killer-bin
+
+ANY OTHER LINUX
+        tar -xzf text_killer-<version>-linux-x86_64.tar.gz
+        cd text_killer-<version>-linux-x86_64
+        ./install.sh            (system-wide into /usr/local, uses sudo)
+        ./install.sh --user     (just for you, into ~/.local)
+  Uninstall: ./install.sh --uninstall   (add --user if installed that way)
+
+All installers include the manual page, so "man text_killer" works on
+Linux and macOS, and MANUAL.txt is installed in the documentation folder
+(/usr/share/doc/... on Linux, /usr/local/share/doc/text_killer on macOS,
+the install folder on Windows).
+
+TERMINAL
+  Any modern terminal works. One that supports 256 colours is strongly
+  recommended (the themes use 256-colour shades; Frost and Solar use 24-bit
+  colour). On Windows use Windows Terminal rather than the old console.
+
+BUILDING FROM SOURCE (OPTIONAL)
+  Requires the Rust toolchain (https://rustup.rs).
+         tar -xzf text_killer-src.tar.gz   (or unzip text_killer-src.zip)
+         cd text_killer
+         cargo build --release
+  The program is created at target/release/text_killer (.exe on Windows).
+  Run the tests with:  cargo test
+  There are two direct dependencies, downloaded automatically by cargo:
+  "ratatui" (terminal interface, crossterm backend only) and
+  "unicode-width". Document formats (ZIP, DEFLATE, XML, RTF) are built in.
+  The release packages are made by packaging/build_packages.py after
+  cross-compiling; packaging/README.txt explains the steps.
+
+
+==============================================================================
+3. STARTING THE PROGRAM
+==============================================================================
+
+USAGE
+      text_killer [OPTIONS] [FILE]...
+
+  With no files, the program starts with one empty document called
+  "untitled".
+
+  Each FILE opens in its own window (tab). Examples:
+      text_killer notes.txt
+      text_killer index.html style.css app.py
+      text_killer ~/projects/site/*.html
+
+  If a named file does not exist yet, a new empty document is opened under
+  that name. The file is created on disk the first time you save it.
+
+  If a file cannot be opened (no permission, too large, a directory), an
+  error appears in the message area and the other files still open.
+
+OPTIONS
+  --cat FILE       Print FILE as text and exit. Documents (.odt, .docx,
+                   .epub, .xlsx, ...) are converted first, so this doubles
+                   as a quick document-to-text tool:
+                       text_killer --cat report.docx | less
+  --convert INPUT OUTPUT
+                   Convert INPUT to OUTPUT and exit. The output format comes
+                   from OUTPUT's extension (section 19):
+                       text_killer --convert notes.md notes.odt
+                       text_killer --convert report.docx report.rtf
+                       text_killer --convert slides.pptx slides.md
+  -h, --help       Show usage information and exit.
+  -V, --version    Show the version number and exit.
+  --               Treat everything after this as a file name, even names
+                   that begin with "-".
+
+EXIT STATUS
+  0   Normal exit.
+  1   The terminal could not be set up, or a terminal error occurred.
+  2   An unknown command-line option was given.
+
+
+==============================================================================
+4. THE SCREEN LAYOUT
+==============================================================================
+
+  +----------------------------------------------------------------------+
+  | text_killer | /home/me/site/index.html     F1 help . F2 menu . ...   |  <- Topic bar
+  +---------------+------------------------------------------------------+
+  | windows       |  1| <!DOCTYPE html>                                  |
+  |  1.#notes.txt |  2| <html lang="en">                                 |
+  |  2.+index.html|  3| <head>                                           |  <- Editor
+  |  3.%data.bin  |  4|   <style>                                        |
+  |               | ~                                                    |
+  | F6 . M-1..9   | ~                                                    |
+  +---------------+------------------------------------------------------+
+  | [2:index.html(+)] [Ln 3/14 Col 1] [HTML] [UTF-8 LF sp2] [INS] [edit] |  <- Status bar
+  | [#index.html] -!- saved /home/me/site/index.html (14 lines, 310 b..  |  <- Input line
+  +----------------------------------------------------------------------+
+
+TOPIC BAR (top line)
+  Shows the program name and the full path of the current document. A
+  document that has never been saved shows its name followed by "(unsaved)".
+  Very long paths are shortened from the left with "...". On wide screens the
+  right side shows key hints. The topic bar is hidden when the terminal is
+  fewer than 8 rows tall.
+
+WINDOW LIST / SIDEBAR (left)
+  Lists every open document, numbered from 1. See section 16.
+
+EDITOR (centre)
+  The text of the current document. On the left is the line-number gutter
+  (toggle it with F4). The current line number is highlighted. Rows below the
+  end of the document are marked with "~".
+
+By default the editor area shows the document as pages side by side
+instead of one long column (see "PAGE VIEW" in section 18):
+
+  │   ┌──────────────────────┐  ┌──────────────────────┐
+  │   │ # Chapter Three      │  │ wasn't going to stop │
+  │   │ The night the river  │  │ him now. The rain... │
+  │   └────────────── 1 / 12 ┘  └────────────── 2 / 12 ┘
+
+STATUS BAR
+  A row of [bracketed] segments describing the current document:
+
+    [1:name(+)]      Window number and file name. "+" means unsaved changes.
+                     "ro" means read-only.
+    [Ln 12/340 Col 5]
+                     Cursor line / total lines, and cursor column (counted
+                     in characters, starting at 1).
+    [Python]         The syntax-highlighting language.
+    [Pages 1-2 of 12]
+                     Page view: the pages on screen and the total.
+    [sel 42]         Number of characters selected (only while selecting).
+    [UTF-8 LF sp4]   Encoding, line-ending style, and indentation style:
+                     "sp4" means spaces with width 4, "tab4" means tab
+                     characters displayed 4 columns wide.
+                     For a converted document this segment shows the
+                     format instead, e.g. [DOCX document] or [ODS spreadsheet].
+    [INS] / [OVR]    Insert mode or overwrite mode (see section 6).
+    [edit] / [windows] / [cmd]
+                     Which part of the screen has keyboard focus.
+    [Act: 2,5]       Like IRC's activity indicator: other windows that have
+                     unsaved changes.
+
+  When the screen is too narrow for every segment, the least important ones
+  are dropped first. The window name and cursor position are kept longest.
+
+INPUT LINE (bottom line)
+  Begins with a prompt such as [#index.html], like an IRC channel prompt.
+    * While the command line has focus (Ctrl+L), this is where you type.
+    * Otherwise it shows the latest message (for example "-!- saved ...")
+      for about 10 seconds, or a hint when there is no message.
+  Messages are colour-coded as information, warnings or errors.
+
+
+==============================================================================
+5. BASIC CONCEPTS: WINDOWS, FOCUS AND MODES
+==============================================================================
+
+WINDOWS (DOCUMENTS / TABS)
+  Every open document is a "window", like a channel in an IRC client. Each
+  window keeps its own cursor, selection, scroll position, undo history,
+  language, encoding, line-ending style and indentation settings.
+
+  Switch windows with:
+    Alt+1 ... Alt+9         Jump straight to window 1-9
+    Alt+0                   Jump to the last window
+    Alt+Right / Alt+Left    Next / previous window
+    Ctrl+PageDown / Ctrl+PageUp
+                            Next / previous window
+    F6                      Move focus to the window list
+    /win <number or name>   Command-line switch (section 15)
+    Mouse click on the sidebar, or mouse wheel over the sidebar
+
+FOCUS
+  Exactly one area receives your key presses at a time. The status bar shows
+  which one:
+    edit      The text editor (normal state).
+    windows   The sidebar window list (F6 toggles).
+    cmd       The command/input line (Ctrl+L).
+  Esc returns focus to the editor from the sidebar or command line.
+
+OVERLAYS
+  The options menu, file browser, confirmation dialogs, help screen and
+  message log appear as boxes on top of the editor. While one is open it
+  receives all key presses. Esc closes it.
+
+INSERT AND OVERWRITE
+  Insert (the default) places typed characters at the cursor. Overwrite
+  replaces the character under the cursor. Press Insert to switch. The status
+  bar shows [INS] or [OVR], and the cursor is a thin bar in insert mode and a
+  block in overwrite mode (if your terminal supports cursor shapes).
+
+
+==============================================================================
+6. EDITING TEXT
+==============================================================================
+
+TYPING
+  Type normally to insert text. Typing while text is selected replaces the
+  selection.
+
+CURSOR MOVEMENT
+  Left / Right            One character. Wraps to the previous/next line.
+                          With a selection and no Shift, jumps to the start/
+                          end of the selection.
+  Up / Down               One line (one screen row when text is wrapped, e.g.
+                          in page view). The cursor tries to stay in the same
+                          screen column, even across short lines and tabs.
+                          Up on the first line goes to the start of the line;
+                          Down on the last line goes to the end.
+  Ctrl+Left / Ctrl+Right  One word left / right.
+  Alt+B / Alt+F           One word left / right (Emacs style).
+  Home / End on wrapped text first go to the start/end of the screen row,
+                          then (pressed again) behave as below.
+  Home                    "Smart home": first press goes to the first
+                          non-blank character; pressing again goes to column 1.
+  End                     End of the line.
+  Ctrl+Home / Ctrl+End    Start / end of the document.
+  PageUp / PageDown       One screen up / down (one page in page view).
+  Alt+PageUp / Alt+PageDown
+                          Page view: a whole spread of pages at a time.
+  Ctrl+Up / Ctrl+Down     Scroll the view one line without moving the cursor
+                          (in page view: scroll the spread, then turn pages).
+
+  Add Shift to any movement key to select text while moving (section 7).
+
+DELETING
+  Backspace               Delete the character before the cursor, or the
+                          selection. At the start of a line, joins the line
+                          with the one above. When the cursor is inside
+                          space-based indentation, deletes back to the
+                          previous indentation stop (a full indent level).
+  Ctrl+H                  Same as Backspace.
+  Delete                  Delete the character after the cursor, or the
+                          selection. At the end of a line, joins the next
+                          line onto this one.
+  Ctrl+Backspace, Alt+Backspace
+                          Delete the previous word.
+  Ctrl+Delete             Delete the next word.
+  Ctrl+K                  Delete the current line (or all selected lines).
+
+NEW LINES AND INDENTATION
+  Enter                   Start a new line. The new line copies the
+                          indentation of the current one, and may indent
+                          further (see section 21).
+  Tab                     With no selection, or a selection within one line:
+                          inserts indentation. If the document uses spaces,
+                          enough spaces are added to reach the next tab stop;
+                          if it uses tabs, a tab character is inserted.
+                          With a selection spanning several lines: indents
+                          every selected line.
+  Shift+Tab               Remove one level of indentation from the current
+                          line or every selected line.
+
+OTHER
+  Insert                  Toggle insert / overwrite mode.
+  Ctrl+D                  Duplicate the current line (or duplicate the
+                          selected text right after itself).
+  Alt+Up / Alt+Down       Move the current line (or selected lines) up/down.
+  Ctrl+J                  Join the current line with the next one (or join
+                          all selected lines), with a single space between.
+  Alt+Enter               Insert a page break (see section 10, PAGE BREAKS).
+
+READ-ONLY DOCUMENTS
+  Binary files (hex view) and files without write permission open read-only.
+  Typing and editing commands do nothing in them, and the window list marks
+  them with "%". Save As can still write a copy of an editable document.
+
+
+==============================================================================
+7. SELECTING, COPYING AND PASTING
+==============================================================================
+
+SELECTING
+  Shift + any movement key   Extend the selection while moving.
+  Ctrl+A                     Select the whole document.
+  Ctrl+Space                 Select the word under the cursor.
+  Mouse drag                 Select with the mouse.
+  Double-click               Select a word.
+  Shift+click                Extend the selection to the clicked spot.
+  Esc                        Clear the selection.
+
+  The selection is drawn with a coloured background. A selected line break
+  shows as one highlighted cell at the end of the line.
+
+CLIPBOARD
+  Ctrl+C, Ctrl+Insert   Copy the selection. With nothing selected, copies the
+                        entire current line, including its line break.
+  Ctrl+X, Shift+Delete  Cut the selection. With nothing selected, cuts the
+                        whole current line.
+  Ctrl+V, Shift+Insert  Paste the editor's internal clipboard at the cursor
+                        (replacing any selection).
+
+  Pasting from your desktop: use your terminal's own paste command (often
+  Ctrl+Shift+V, Cmd+V, or right-click > Paste). text_killer turns on
+  "bracketed paste" mode, so pasted text arrives as one block and is inserted
+  exactly as written, without triggering auto-indent. Windows-style line
+  breaks in pasted text are converted.
+
+  Copying to your desktop: copies and cuts are also sent to the terminal's
+  system clipboard using the OSC 52 escape sequence. This works in many
+  modern terminals (kitty, WezTerm, iTerm2, Alacritty, Windows Terminal,
+  recent xterm, and tmux with "set -g set-clipboard on"), including over SSH.
+  Copies over 100,000 bytes are kept only in the internal clipboard. Turn
+  OSC 52 off from Options > View > "Toggle OSC52 clipboard".
+
+  Note: Ctrl+V pastes only the internal clipboard. The program cannot read
+  your system clipboard directly; use the terminal's paste instead.
+
+
+==============================================================================
+8. UNDO AND REDO
+==============================================================================
+
+  Ctrl+Z                Undo the last change.
+  Ctrl+Y, Ctrl+Shift+Z  Redo.
+
+  * Each window has its own unlimited undo history for the session.
+  * Consecutive typing is grouped, so one undo removes a run of typed
+    characters. A run ends when you type a space or Enter, move the cursor,
+    switch windows or save.
+  * Consecutive Backspace/Delete presses are grouped the same way.
+  * Every menu action, format command, paste or replace is one undo step.
+  * Undo and redo restore the cursor position.
+  * If you undo back to the point of the last save, the "+" (modified) marker
+    disappears.
+  * Making a new change after undoing clears the redo history.
+  * Undo history is not saved when the program closes.
+
+
+==============================================================================
+9. SEARCHING, REPLACING AND JUMPING TO LINES
+==============================================================================
+
+FIND
+  Ctrl+F opens the command line with "/find " ready to type. If text is
+  selected (on one line) it is filled in automatically; otherwise the last
+  search is filled in.
+
+  Searching is incremental: as you type, the cursor jumps to the first match
+  after where you started, and that match is selected. Press Enter to accept,
+  or Esc to cancel and return the cursor to where it was.
+
+  Smart case: a search typed entirely in lower case ignores case ("hello"
+  finds "Hello" and "HELLO"). A search containing any capital letter is
+  case-sensitive ("Hello" finds only "Hello").
+
+  All matches visible on screen are highlighted. Esc in the editor first
+  clears the selection; a second Esc hides the match highlighting.
+
+  F3            Find the next match.
+  Shift+F3      Find the previous match.
+  Searches wrap around the end/start of the document, and the message
+  "search wrapped" appears when that happens. Searches match within a single
+  line; patterns cannot contain line breaks. Regular expressions are not
+  supported.
+
+REPLACE
+  Ctrl+R opens the command line with "/replace ". Type the text to find,
+  a space, and the replacement:
+      /replace colour color
+  Use quotes when either part contains spaces, or for an empty replacement:
+      /replace "old name" "new name"
+      /replace "TODO: " ""
+  Inside quotes, \n means a line break and \t means a tab.
+  Replace changes every occurrence in the document at once. It is
+  case-sensitive and the message shows how many were replaced. The whole
+  replacement is one undo step.
+
+GO TO LINE
+  Ctrl+G opens the command line with "/goto ".
+      /goto 120        Line 120
+      /goto 120:15     Line 120, column 15
+      /goto +10        10 lines down from the current line
+      /goto -5         5 lines up
+  The target line is centred on screen. Numbers past the end go to the last
+  line.
+
+SHORTCUT: BARE INPUT
+  Anything typed on the command line without a leading "/" is treated as:
+      a number (e.g. "250" or "250:4")  ->  go to that line
+      anything else                     ->  find that text
+
+
+==============================================================================
+10. FORMATTING TOOLS
+==============================================================================
+
+Formatting tools are in Options > Format, on keyboard shortcuts, and on
+slash commands. They act on the selection, or on the word under the cursor
+when nothing is selected.
+
+TEXT STYLES
+                     Plain text / Markdown     HTML / XML
+  Bold      Ctrl+B   **text**                  <strong>text</strong>
+  Italic    Ctrl+T   *text*                    <em>text</em>
+  Underline Ctrl+U   <u>text</u>               <u>text</u>
+  Strike    (menu)   ~~text~~                  <s>text</s>
+  Code      Ctrl+E   `text`                    <code>text</code>
+  Link      (menu)   [text]()                  <a href="">text</a>
+
+  * Applying the same style again removes it (toggle). This works whether
+    the markers are inside the selection or just outside it.
+  * In programming languages (Python, CSS, JavaScript, etc.) only "Inline
+    code" is available; the other styles show a message saying the language
+    has no such markup.
+  * To wrap a selection in any HTML tag, use the /tag command:
+        /tag div
+        /tag span class="note"
+        /tag a href="https://example.com"
+
+HEADINGS (Alt+H)
+  Markdown / plain text: each press adds one "#" to the start of the line
+  ("# Title" -> "## Title" ... up to six), and a seventh press removes it.
+  HTML: the line is wrapped in <h1>...</h1>; each further press moves to
+  <h2> ... <h6>, then removes the heading.
+  Other languages: not supported.
+
+COMMENTS (Ctrl+/)
+  Toggles comments on the current line or every selected line.
+    * Languages with line comments add/remove the marker (for example "# "
+      in Python, "// " in JavaScript, "-- " in SQL and Lua).
+    * HTML/XML/Markdown wrap each line in <!-- ... -->.
+    * CSS wraps each line in /* ... */.
+  The marker is placed at the smallest indentation among the selected lines
+  so blocks stay lined up. If every non-blank line is already commented, the
+  markers are removed instead. Blank lines are skipped.
+  Some terminals do not send Ctrl+/; they may send it as Ctrl+7 or Ctrl+_,
+  which also work. Otherwise use the menu or the /comment command.
+
+CASE
+  Alt+U    UPPERCASE
+  Alt+L    lowercase
+  Alt+T    Title Case (capitalises the first letter of every word)
+
+REFLOW (Alt+Q)
+  Re-wraps the current paragraph (the block of non-blank lines around the
+  cursor), or the selected lines, so no line is longer than 80 characters.
+  The first line's indentation is kept on every line. Use "/reflow 60" (or any
+  width of 10 or more) for a different width.
+
+PAGE BREAKS (Alt+Enter, /pagebreak, Options > Format > Insert page break)
+  Inserts a page break on its own line at the cursor. In the text it is a
+  form-feed character (shown as ^L in the continuous view); in page view it
+  appears as "┄┄ page break ┄┄" and the text after it starts on a new page.
+  Delete it like any other line. When saved as .odt, .docx or .rtf it
+  becomes a real page break that LibreOffice, Word and others honour, and
+  page breaks in documents you open come back as page breaks.
+
+JSON
+  Pretty-print JSON   Re-indents the selection, or the whole document,
+                      using the document's tab width (one key per line,
+                      nested objects indented, empty {} and [] kept compact).
+  Minify JSON         Removes all unneeded whitespace.
+  Both also strip // and /* */ comments (JSONC). Bracket nesting, string
+  termination and literal values are checked, and any problem is reported
+  with a line number. Full JSON grammar is not checked (for example a missing
+  value after ":" is not reported). Commands: /json and /json min.
+
+
+==============================================================================
+11. LINE TOOLS
+==============================================================================
+
+Found in Options > Lines. Most act on the selected lines, or on the whole
+document when nothing is selected. (For sorting, a final empty line from the
+file's trailing newline is left in place.)
+
+  Indent / Outdent          Tab / Shift+Tab
+  Duplicate line            Ctrl+D
+  Delete line               Ctrl+K
+  Move line up / down       Alt+Up / Alt+Down
+  Join lines                Ctrl+J
+  Sort A-Z                  Alphabetical, ignoring case     (/sort)
+  Sort Z-A                  Reverse alphabetical            (/sort desc)
+  Reverse                   Reverse the order of lines
+  Remove duplicates         Keep only the first copy of each identical line
+                            (/uniq)
+  Trim trailing whitespace  Remove spaces/tabs at line ends, always across the
+                            whole document; reports how many lines changed
+                            (/trim)
+  Tabs -> spaces            Expand every tab to spaces at the tab width, and
+                            switch the document to space indentation
+  Spaces -> tabs            Convert leading spaces to tabs, and switch the
+                            document to tab indentation
+
+
+==============================================================================
+12. THE OPTIONS MENU
+==============================================================================
+
+Open the menu with F2, Ctrl+P, F10 or the /menu command.
+
+NAVIGATION
+  Up / Down, j / k        Move the highlight (wraps around)
+  PageUp / PageDown       Move 8 items
+  Home / End              First / last item
+  Enter, Right, Space     Run the item, or open a submenu (marked with a
+                          triangle)
+  Left, Backspace         Back to the previous menu
+  A letter or digit       Jump to the next item starting with it
+  Esc, F2, F10, Ctrl+P    Close the menu
+  Mouse                   Click an item to run it; the wheel moves the
+                          highlight; right-click goes back; clicking outside
+                          closes the menu
+
+  Most items close the menu when chosen. "Toggle line numbers", "Toggle
+  whitespace", "Toggle sidebar" and "Next theme" keep it open so you can see
+  the effect and try again.
+
+MENU CONTENTS (shortcut shown on the right in the program)
+
+  File
+    New document ............ Ctrl+N
+    Open... ................. Ctrl+O
+    Save .................... Ctrl+S
+    Save as... .............. F12
+    Save all ................ /saveall
+    Reload from disk ........ /reload
+    Close tab ............... Ctrl+W
+    Quit .................... Ctrl+Q
+  Edit
+    Undo, Redo, Cut, Copy, Paste, Select all, Find..., Find next,
+    Find previous, Replace all..., Go to line..., Toggle overwrite
+  Format
+    Bold, Italic, Underline, Strikethrough, Inline code, Link,
+    Heading (cycle), Toggle comment, UPPERCASE, lowercase, Title Case,
+    Reflow paragraph, Insert page break, Pretty-print JSON, Minify JSON
+  Lines
+    Indent, Outdent, Duplicate line, Delete line, Move line up,
+    Move line down, Join lines, Sort A-Z, Sort Z-A, Reverse,
+    Remove duplicates, Trim trailing whitespace, Tabs -> spaces,
+    Spaces -> tabs
+  View
+    Theme          > pick a colour theme (see section 18)
+    Page view      > Off (original continuous view), Auto, 1 to 8 pages
+    Page size      > Letter, A4, Legal, A5, Wide (80 columns)
+    Page scaling   > Actual size (true pages), Fill window
+    [x] Wrap long lines (page view off)
+    Toggle line numbers (F4), Toggle sidebar (F5), Toggle whitespace (F7),
+    Next theme (F8), Toggle mouse capture (F9), Toggle OSC52 clipboard,
+    Focus sidebar (F6), Focus command line (Ctrl+L)
+  Document
+    Language       > choose the highlighting language from the full list
+    Line endings   > LF (Unix), CRLF (Windows), CR (classic Mac)
+    Encoding       > UTF-8, UTF-8 with BOM, UTF-16 LE, UTF-16 BE, Latin-1
+    Tab width      > 2, 3, 4 or 8 columns
+    Toggle tabs/spaces
+  Settings
+    [ ] Remember theme across sessions
+    [ ] Remember page view & layout across sessions
+    Reset settings to defaults
+    Show settings file location
+  Message log
+
+  In the "choose one" submenus (Theme, Page view, Page size, Page scaling,
+  Language, Line
+  endings, Encoding, Tab width) the current setting is marked with "●" and
+  is highlighted when the submenu opens; on/off options show [x] or [ ].
+  Choosing a theme, page view or page size keeps the menu open, so you can
+  step through the choices with the arrow keys and Enter to preview them.
+  Help ...................... F1
+  Quit ...................... Ctrl+Q
+
+
+==============================================================================
+13. THE FILE BROWSER (OPEN AND SAVE AS)
+==============================================================================
+
+The file browser appears for Open (Ctrl+O, /open with no file name) and
+Save As (F12, Ctrl+Alt+S, Ctrl+Shift+S where the terminal sends it, /saveas
+with no file name, or saving a document that has never been saved).
+
+LAYOUT
+  * Top row: the folder being shown ("in /home/me/projects").
+  * The list: ".." (parent folder) first, then folders (shown in a highlight
+    colour with a trailing "/"), then files with their sizes. Symbolic links
+    to files show a trailing "@". Everything is sorted alphabetically,
+    ignoring case.
+  * The bottom input row: "filter:" when opening, "name:" when saving.
+  * An info row with the entry count, whether hidden files are shown, or an
+    error message (such as a folder that cannot be read).
+  * The box grows and shrinks with the terminal (about 80% of the screen).
+
+KEYS (BOTH MODES)
+  Up / Down               Move the highlight
+  PageUp / PageDown       Move one page
+  Home / End              First / last entry (when the input box is empty;
+                          otherwise they move the text cursor. Ctrl+Home /
+                          Ctrl+End always move the highlight)
+  Tab                     On a folder: enter it. On a file: copy its name
+                          into the input box.
+  Right                   Enter the highlighted folder (input box empty)
+  Backspace, Left         Go up to the parent folder (input box empty;
+                          otherwise they edit the text)
+  Ctrl+H, Alt+H           Show / hide hidden files (names starting with ".")
+  Ctrl+R                  Refresh the listing
+  Esc                     Cancel
+  Mouse                   Click an entry to highlight it; click it again to
+                          open it (enter a folder / open a file). The wheel
+                          moves the highlight.
+
+  The input box supports normal line editing (see section 15, "Editing the
+  command line").
+
+OPEN MODE
+  * Type to filter: only entries whose names contain the typed text (ignoring
+    case) are listed, and the first entry that begins with it is highlighted.
+  * Enter on a folder enters it; Enter on a file opens it.
+  * Typing a path containing "/" or starting with "~" and pressing Enter
+    goes straight there: a folder is entered, a file is opened.
+        ~/projects/        -> shows that folder
+        /etc/hosts         -> opens that file
+        ../other/notes.md  -> relative to the folder being shown
+  * If the filter matches nothing, Enter creates a new document with the
+    typed name in the current folder (written to disk when you save it).
+  * Opening a file that is already open just switches to its window.
+
+SAVE AS MODE
+  * The name box starts with the document's current name.
+  * Type or edit the name and press Enter to save into the folder shown.
+  * Paths are accepted in the name box:
+        drafts/letter.txt        saves into the "drafts" subfolder
+        ~/Desktop/copy.html      saves to your Desktop
+    The target folder must already exist ("directory does not exist" is
+    shown otherwise). If the typed name is an existing folder, the browser
+    enters that folder instead of saving.
+  * To browse into a subfolder while keeping the file name, highlight the
+    folder and press TAB (or Right when the name box is empty, or click the
+    folder twice).
+  * Enter on a highlighted file copies its name into the box. Press Enter
+    again to save over it.
+  * If the chosen file already exists (and is not the document's own file),
+    you are asked "already exists. Overwrite it?" Answer Y to overwrite.
+
+  IMPORTANT: In Save As, pressing ENTER while a folder is highlighted does
+  NOT open that folder when the name box contains a name. Enter always saves
+  using the name in the box, in the folder currently shown. Use TAB to step
+  into folders. (If you clear the name box completely, Enter acts on the
+  highlighted entry instead.)
+
+  After a successful Save As, the window takes the new name and path. If the
+  document was "Plain Text", the language is detected again from the new
+  name (so saving "untitled" as "page.html" turns on HTML highlighting).
+
+
+==============================================================================
+14. SAVING, CLOSING AND QUITTING
+==============================================================================
+
+SAVE (Ctrl+S)
+  Writes the document to its file. A document that has never been saved opens
+  the Save As browser instead. A message confirms the path, line count and
+  byte count.
+
+  How files are written:
+  * Safely ("atomically"): the new contents are first written to a temporary
+    file named ".<filename>.text_killer-tmp" in the same folder, flushed to
+    disk, then renamed over the original. If the program or computer stops
+    mid-save, the original file is left intact. If renaming is not allowed
+    (some network or special filesystems), the file is written directly.
+  * The original file's permissions are kept.
+  * The original encoding and line-ending style are kept (section 19).
+  * The format is chosen by the file's extension: saving to .odt, .docx or
+    .rtf writes a real document; .gz writes gzip-compressed text; anything
+    else is written as plain text (section 19, "Document formats").
+
+  Saving a converted document:
+  * If you opened an .odt, .docx, .rtf or similar document and save it back
+    to the same file, you are asked first:
+        "report.docx" was converted from DOCX document. Saving rewrites it
+        with text, headings, lists, bold and italic only; images, tables,
+        fonts and page layout will be lost. Overwrite it?   [Y]es  [N]o
+    Y saves. N cancels; press F12 to save a copy under another name instead.
+    The question is asked once; later saves of the same document don't ask.
+  * Spreadsheets, presentations and e-books (.ods, .xlsx, .odp, .pptx,
+    .epub, flat .fod* files) can be opened but not written. Ctrl+S opens
+    Save As with a suggested new name (.md for spreadsheets, .odt for the
+    others); the original file is never touched.
+
+SAVE ALL (/saveall)
+  Saves every modified document that already has a file name, and reports
+  how many untitled documents still need Save As.
+
+RELOAD (/reload, Options > File > Reload from disk)
+  Re-reads the file from disk, discarding the in-memory copy. You are asked
+  to confirm if there are unsaved changes. /reload! skips the question. The
+  cursor stays near its previous position.
+
+CLOSE (Ctrl+W, /close, /part)
+  Closes the current window. If it has unsaved changes you are asked:
+      Save changes to "name" before closing?   [Y]es  [N]o  [C]ancel
+    Y / Enter   Save, then close (untitled documents open Save As first,
+                and close after saving)
+    N           Close without saving
+    C / Esc     Keep the window open
+  /close! closes without asking. Closing the last window leaves a fresh empty
+  "untitled" document.
+
+QUIT (Ctrl+Q, /quit, /q)
+  With no unsaved changes, the program exits immediately. Otherwise:
+      N unsaved document(s): a, b. Save all before quitting?
+    Y / Enter   Save every modified document that has a file name. If an
+                untitled modified document remains, the program switches to
+                it and opens Save As. Save it, then press Ctrl+Q again.
+    N           Quit without saving anything
+    C / Esc     Cancel
+  /quit! or /q! quits immediately and discards all unsaved changes.
+  /wq or /x saves the current document, then quits (asking about any other
+  unsaved documents).
+
+  The terminal is always restored to normal on exit, including after a crash.
+
+
+==============================================================================
+15. THE COMMAND LINE AND SLASH COMMANDS
+==============================================================================
+
+Press Ctrl+L (or click the input line) to type at the bottom prompt. Several
+shortcuts also open it with a command already filled in (Ctrl+F, Ctrl+R,
+Ctrl+G). Press Enter to run, Esc to cancel.
+
+EDITING THE COMMAND LINE
+  Left / Right, Home / End     Move the cursor
+  Ctrl+A / Ctrl+E              Start / end of line
+  Ctrl+Left / Ctrl+Right       Word left / right (Alt works too)
+  Backspace / Delete           Delete a character
+  Ctrl+W, Ctrl+Backspace       Delete the previous word (stops at "/" too,
+                               handy for paths)
+  Ctrl+U                       Delete everything before the cursor
+  Ctrl+K                       Delete everything after the cursor
+  Up / Down                    Step through the last 500 commands
+                               (history lasts for the session only)
+  Tab                          Complete (see below)
+  Esc, Ctrl+C, Ctrl+G          Cancel and return to the editor
+
+TAB COMPLETION
+  * A partly typed command: completes it if only one matches, extends to the
+    longest shared beginning, or lists all matches in the message area.
+  * File commands (/open, /o, /join, /j, /e, /save, /w, /saveas, /cd):
+    completes file and folder names. Folders get a trailing "/". Hidden names
+    are offered only if you have typed a leading ".". Relative names are
+    completed from the current document's folder.
+  * /lang: completes language names.
+
+COMMAND REFERENCE
+  Arguments in <angle brackets> are required, [square brackets] optional.
+  Arguments containing spaces can be "double" or 'single' quoted.
+  Relative file paths are resolved from the program's current working
+  directory (see /cd and /pwd), and "~" means your home folder.
+
+  Files and windows
+    /open [file...]       Open one or more files (no argument: file browser).
+                          Aliases: /o /join /j /e /edit
+    /save [file]          Save; with a file name, write to that file and
+                          adopt it as the document's path. Aliases: /w /write
+    /saveas [file]        Save As (no argument: file browser). Asks before
+                          overwriting an existing file.
+    /saveall              Save all modified named documents. Alias: /wa
+    /wq                   Save, then quit. Alias: /x
+    /new [file]           New empty window, optionally pre-named with a path
+                          (created on first save). Alias: /n
+    /close                Close the window (asks if unsaved).
+                          Aliases: /part /c
+    /close!               Close without asking. Alias: /part!
+    /quit                 Quit (asks if unsaved). Aliases: /q /exit
+    /quit!                Quit without saving. Alias: /q!
+    /reload, /reload!     Reload from disk (with / without confirmation)
+    /win <n|name>         Switch to window number n, or the first window whose
+                          name contains the text.
+                          Aliases: /window /buffer /b /w#
+    /next, /prev          Next / previous window
+    /cd [folder]          Change the working directory (no argument: home)
+    /pwd                  Show the working directory
+
+  Search and navigation
+    /find <text>          Find (incremental while typing).
+                          Aliases: /f /search
+    /find                 With no text: hide search highlighting
+    /replace <find> <with>
+                          Replace all occurrences. Aliases: /s /r
+    /goto <line[:col]>    Jump to a line; +N / -N are relative.
+                          Aliases: /g /line
+
+  Document settings
+    /lang <name>          Set the highlighting language (any name or alias
+                          from section 20). With an unknown name, lists them.
+                          Alias: /syntax
+    /tabsize <1-16>       Set the tab width. Alias: /ts
+    /tabs                 Indent with tab characters
+    /spaces               Indent with spaces
+    /encoding <name>      utf-8, utf-8-bom, utf-16le (or utf-16), utf-16be,
+                          latin1 (or iso-8859-1). Alias: /enc
+    /eol <style>          lf (unix), crlf (dos, windows), cr (mac)
+    /theme [name]         crimson, midnight, matrix, amber, ocean, frost,
+                          solar, irssi, weechat, mirc or paper (display
+                          names work too); without a name, the next theme
+
+  Formatting
+    /tag <name> [attributes]
+                          Wrap the selection (or word) in an HTML tag.
+    /bold, /italic        Bold / italic
+    /upper, /lower, /title
+                          Change case
+    /comment              Toggle comments
+    /sort [desc]          Sort lines A-Z (or Z-A)
+    /uniq                 Remove duplicate lines
+    /trim                 Trim trailing whitespace
+    /reflow [width]       Reflow the paragraph (default 80, minimum 10)
+    /json [min]           Pretty-print (or minify) JSON
+    /me <text>            Insert "* text" at the cursor (an IRC joke)
+
+  Pages and settings
+    /pages <mode>         Page view: off (original view), auto, or a fixed
+                          number of pages from 1 to 12. Alias: /pageview
+    /pagescale <scale>    actual (true page size) or fill (stretch pages to
+                          fill the window). Alias: /scale
+    /pagesize <size>      letter, a4, legal, a5, wide, or <cols>x<lines>
+                          such as 72x60
+    /wrap [on|off]        Wrap long lines in the continuous view
+    /pagebreak            Insert a page break. Alias: /pb
+    /remember <what>      theme, layout, all or none: which settings are
+                          kept across sessions (saved immediately)
+    /settings             Show where the settings file is
+
+  Interface
+    /menu                 Open the options menu
+    /help, /?             Show the help screen
+    /log                  Show the message log
+    /clear                Clear the message log
+
+
+==============================================================================
+16. THE WINDOW LIST (SIDEBAR)
+==============================================================================
+
+The sidebar on the left lists open documents, IRC-style:
+
+     1.#notes.txt      "#"  saved, no changes
+     2.+index.html     "+"  unsaved changes
+     3.%photo.png      "%"  read-only (binary view or no write permission)
+
+The current window is highlighted. Long names are shortened with "...". If
+there are more windows than rows, the list scrolls to keep the current one
+visible. The bottom row shows a short key hint when there is room.
+
+KEYBOARD (after pressing F6)
+  Up / Down, k / j     Move the highlight
+  Home / End           First / last window
+  Enter, Right         Switch to the highlighted window and return to editing
+  Space                Switch to it but stay in the list
+  Delete, d, x         Close the highlighted window (asks if unsaved)
+  n                    New document
+  o                    Open file browser
+  Esc, Tab, Left, F6   Return to the editor
+
+MOUSE
+  Click a window name to switch to it. Scroll the wheel over the sidebar to
+  move to the previous / next window.
+
+SHOWING AND HIDING
+  F5 hides or shows the sidebar. It also hides itself automatically when the
+  terminal is narrower than 50 columns (section 22).
+
+
+==============================================================================
+17. MOUSE SUPPORT
+==============================================================================
+
+Mouse support is on by default. In the editor:
+  Left click            Place the cursor
+  Shift + left click    Extend the selection
+  Drag                  Select text (the view follows when you drag above
+                        the top edge)
+  Double-click          Select a word (two clicks within 0.4 seconds)
+  Wheel up / down       Scroll 3 lines (the cursor does not move; the next
+                        key press brings the view back to the cursor)
+  Horizontal wheel      Scroll 4 columns sideways (if your mouse and terminal
+                        support it)
+  Click the input line  Focus the command line
+
+Overlays: see sections 12 (menu) and 13 (file browser). In the help and log
+viewers the wheel scrolls and a click closes them.
+
+MOUSE CAPTURE AND TERMINAL SELECTION
+While the program captures the mouse, your terminal's own click-and-drag text
+selection does not work. Press F9 to turn mouse capture off (and again to turn
+it back on). Many terminals also let you bypass capture temporarily by holding
+Shift (or Option/Alt on some systems) while dragging.
+
+
+==============================================================================
+18. THEMES, PAGE VIEW, SAVED SETTINGS AND VIEW OPTIONS
+==============================================================================
+
+THEMES
+  Choose a theme from Options > View > Theme (F2, then View, then Theme).
+  The active theme is marked "●". F8 cycles to the next theme, and
+  /theme <name> picks one by name.
+
+  Crimson   (default) Solid black background, dark-red title and status
+            bars, red borders and highlights, and syntax colours in shades of
+            red, coral, rose and grey, with white function names.
+  Midnight  Violet and pink accents on a deep navy background.
+  Matrix    Green-phosphor terminal: shades of green on black.
+  Amber     Retro amber monitor: yellows and oranges on near-black.
+  Ocean     Teal and sea-blue accents on dark grey.
+  Frost     Cool arctic greys and blues (24-bit colour).
+  Solar     Warm "solarized dark" palette (24-bit colour).
+  Irssi     Blue status bars on your terminal's own background, cyan accents.
+  WeeChat   Dark grey bars with green and cyan accents.
+  mIRC      A light theme: white background, grey bars, classic mIRC blue and
+            red accents.
+  Paper     A light theme: black ink on white with red accents.
+
+  Most themes use 256-colour codes. Frost and Solar use 24-bit ("true
+  colour") RGB values; terminals without true-colour support show the
+  nearest colours they can, which may look different.
+
+PAGE VIEW
+  By default text_killer shows documents as pages, like a word processor's
+  side-by-side view. A page is 65 characters wide and 54 lines tall: US
+  Letter (8.5 x 11 in) with 1 in margins at typewriter spacing (10
+  characters and 6 lines per inch). Text wraps at word boundaries and flows
+  from the bottom of one page to the top of the next. Each page shows its
+  number ("3 / 12") in its bottom border; the page holding the cursor has a
+  highlighted border.
+
+  How many pages (Options > View > Page view, or /pages):
+    Auto (default)  As many as fit side by side, up to 12. Each page needs
+                    69 columns plus a 2-column gap, so a typical 1080p
+                    window (about 200 columns) shows 2 pages, 1440p shows 3,
+                    a 3440-pixel ultrawide 4 and a 5120-pixel super-
+                    ultrawide 5-7, depending on font size. Re-checked
+                    whenever the window is resized.
+    1 to 8          Exactly that many, fewer if they don't fit (the menu
+                    offers 1-8; /pages accepts up to 12).
+    Off             The original continuous view: one long column with line
+                    numbers and horizontal scrolling for long lines.
+  If not even one page fits (about 70 columns plus the sidebar), the
+  continuous view is used automatically and the status bar says "pages:
+  window too narrow". Hiding the sidebar (F5) gives more room.
+
+  Page scaling (Options > View > Page scaling, or /pagescale):
+    Actual size (default)
+                    True pages: exactly the chosen page size (65 x 54 for
+                    Letter). Space the pages don't need stays empty, and
+                    page breaks fall where they would on paper.
+    Fill window     The pages stretch to use the whole width and height of
+                    the window, with no empty margins. With Auto, the number
+                    of true-size pages that fit is kept and each is
+                    widened; with a fixed number (e.g. 4 pages), the window
+                    is divided between them. Each page then holds more text
+                    per line and more lines, so page boundaries depend on
+                    the window size and no longer match printed pages
+                    (inserted page breaks are still respected). Pages are
+                    never made narrower than 20 columns; if a fixed count
+                    would be narrower, fewer pages are shown.
+  The status bar shows "fill" while Fill window is active.
+
+  Larger text: a terminal program cannot change the size of its characters;
+  that is set by the terminal's font. To make pages bigger on screen at
+  true size, increase the terminal's font size (often Ctrl+plus, or
+  Cmd+plus on macOS): each character gets larger, fewer pages fit, and
+  Auto adjusts the count automatically.
+
+  Page height: with Actual size, pages are always the full 54 lines. When the
+  window is shorter than a page, the whole spread scrolls up and down as
+  you move. A page needs 56 rows plus 4 for the bars; reducing the
+  terminal's font size (often Ctrl+minus) lets a whole page fit.
+
+  Page sizes (Options > View > Page size, or /pagesize):
+    Letter 8.5x11 in  65 x 54   (default)
+    A4 210x297 mm     63 x 58
+    Legal 8.5x14 in   65 x 72
+    A5 148x210 mm     42 x 40
+    Wide              80 x 54
+    Custom            /pagesize 72x60 (20-200 columns, 10-200 lines)
+
+  Moving around in page view: Up/Down move by screen row, PageUp/PageDown
+  by one page, Alt+PageUp/PageDown by a whole spread, Ctrl+Home/End to the
+  start/end. The mouse wheel scrolls the spread and then turns pages;
+  clicking places the cursor on any visible page. Selection, search
+  highlighting, bracket matching and syntax colours all work as usual.
+
+  Page view lays out plain text; it is not an exact print preview. Word
+  processors use proportional fonts, so their page breaks fall on different
+  words, except where you inserted page breaks yourself (section 10).
+
+WRAP LONG LINES
+  With page view off, Options > View > "Wrap long lines" (or /wrap on)
+  wraps long lines at the window edge instead of scrolling sideways. The
+  line number appears on the first row of each wrapped line.
+
+SAVED SETTINGS (Options > Settings)
+  Normally every start uses the defaults. Two independent switches keep
+  your choices across sessions:
+    [ ] Remember theme across sessions
+    [ ] Remember page view & layout across sessions
+        (page view, page size, page scaling, wrap, line numbers, sidebar,
+        whitespace and mouse capture)
+  Turning a switch on saves the current values immediately, and later
+  changes are saved as you make them. Turning it off stops remembering that
+  group (the file is removed when nothing is remembered). "Reset settings
+  to defaults" restores the defaults and deletes the saved file.
+
+  The settings file is plain text, safe to edit by hand:
+    Linux:    ~/.config/text_killer/settings.conf  (or $XDG_CONFIG_HOME)
+    macOS:    ~/Library/Application Support/text_killer/settings.conf
+    Windows:  %APPDATA%\text_killer\settings.conf
+  The TEXT_KILLER_CONFIG environment variable can point to another file.
+  /settings (or "Show settings file location") shows the path in use.
+
+VIEW TOGGLES
+  F4   Line numbers on/off. Numbers also hide automatically on very narrow
+       terminals (under 24 columns of editor space).
+  F5   Sidebar on/off.
+  F7   Show whitespace: tabs as "->" arrows, trailing spaces as dots, and
+       selected line breaks as a paragraph sign.
+  F8   Next theme (Options > View > Theme lists them all).
+  F9   Mouse capture on/off.
+
+OTHER VISUAL AIDS
+  * The line holding the cursor has a subtly different background.
+  * Matching brackets: when the cursor is on or just after ( ) [ ] or { },
+    both it and its partner are highlighted, even across lines.
+  * Control characters in a file (other than tab) are shown as ^X in a
+    warning colour, for example ^[ for the escape character.
+  * Wide characters (Chinese, Japanese, Korean, many emoji) take two columns
+    and are handled correctly for cursor movement and clicking.
+
+Unless remembered (see SAVED SETTINGS above), each start uses the defaults:
+Crimson theme, page view Auto with actual-size Letter pages, wrap off, line numbers on,
+sidebar on, whitespace off, mouse on, OSC 52 on.
+
+
+==============================================================================
+19. FILE FORMATS, DOCUMENTS, ENCODINGS AND LINE ENDINGS
+==============================================================================
+
+text_killer opens any text file whatever its extension. Highlighting is
+chosen separately (section 20).
+
+ENCODING DETECTION (in this order)
+  1. Starts with EF BB BF            -> UTF-8 with BOM
+  2. Starts with FF FE               -> UTF-16 little-endian
+  3. Starts with FE FF               -> UTF-16 big-endian
+  4. Valid UTF-8 that looks like text -> UTF-8
+  5. Looks binary                    -> read-only hex view (see below)
+  6. Anything else                   -> Latin-1 (ISO-8859-1), each byte one
+                                        character, so legacy 8-bit files
+                                        never fail to open
+
+  A file "looks binary" if its first 8 KB contain a NUL byte, or if more than
+  10% of those bytes are unusual control characters.
+
+  Documents are saved in the encoding they were opened with. Change it in
+  Options > Document > Encoding or with /encoding. Changing it marks the
+  document as modified so the change is saved. Latin-1 can only store
+  characters up to U+00FF; if the text contains others, saving fails with a
+  message suggesting "/encoding utf-8". New documents use UTF-8.
+
+LINE ENDINGS
+  The program counts LF (Unix, macOS), CRLF (Windows) and CR (classic Mac)
+  endings and uses whichever is most common. Inside the editor every line
+  break is the same; when saving, the detected style is written back. Change
+  it in Options > Document > Line endings or with /eol (this marks the
+  document as modified). New documents use LF.
+
+  Whether the file ends with a line break is preserved exactly: a file that
+  ends with a newline shows an empty last line in the editor.
+
+BINARY FILES (HEX VIEW)
+  Binary files (images, programs, archives...) open read-only as a hex dump:
+      00000000  7f 45 4c 46 02 01 01 00  00 00 00 00 00 00 00 00  |.ELF............|
+  Each row shows the byte offset, 16 bytes in hexadecimal and their printable
+  ASCII characters. Up to the first 4 MB are shown, with a note if the file
+  is longer. Hex views cannot be edited or saved.
+
+SIZE LIMIT
+  Files larger than 256 MB are refused to protect memory.
+
+DOCUMENT FORMATS
+  Office documents, e-books and compressed files are converted to editable
+  text when opened, and converted back when saved in a writable format.
+  No external programs are needed; the conversion is built in.
+
+    Format                            Extensions            Open  Save
+    --------------------------------  --------------------  ----  ----
+    OpenDocument Text (LibreOffice)   .odt .ott             yes   .odt
+    OpenDocument Spreadsheet          .ods .ots             yes   no
+    OpenDocument Presentation         .odp .otp             yes   no
+    Flat OpenDocument (XML)           .fodt .fods .fodp     yes   no
+    Microsoft Word                    .docx .docm .dotx     yes   .docx
+    Microsoft Excel                   .xlsx .xlsm .xltx     yes   no
+    Microsoft PowerPoint              .pptx .pptm .ppsx     yes   no
+    EPUB e-book                       .epub                 yes   no
+    Rich Text Format                  .rtf                  yes   .rtf
+    gzip-compressed text              .gz                   yes   .gz
+
+  Files are also recognised by their contents, so a renamed .docx or .odt
+  still opens as a document.
+
+  How documents appear in the editor
+  Documents are shown as lightweight Markdown, so their structure can be
+  edited with ordinary typing or the formatting tools (section 10):
+
+      # Heading 1   ## Heading 2 ... ###### Heading 6
+      - bullet item          (indent two spaces per nesting level)
+      **bold**   *italic*   ***bold italic***
+      Cell | Cell | Cell     (rows of tables)
+      ## Sheet: Name         (each spreadsheet sheet; cells separated by tabs)
+      ## Slide 3             (each slide; slide titles become ### headings)
+
+  Page breaks appear as their own line (see section 10, PAGE BREAKS).
+  Paragraphs are lines; an empty line is an empty paragraph. Tabs, line
+  breaks and runs of spaces inside paragraphs are preserved. Footnotes,
+  comments, tracked deletions and speaker notes are left out. Images,
+  charts, fonts, colours and page layout are not shown.
+
+  Saving as a document
+  Saving to .odt, .docx or .rtf turns the Markdown back into a real
+  document: "#" lines become Heading 1-6 styles, "-" lines become proper
+  (nested) bulleted lists, **bold** / *italic* become bold and italic text,
+  and page breaks become real page breaks. The result opens normally in
+  LibreOffice, Microsoft Word, Google Docs, Pages and pandoc. Tables are
+  saved as their "Cell | Cell" text.
+
+  This also works for plain files: write notes in Markdown style and use
+  Save As (F12) with a .docx or .odt name, or run
+      text_killer --convert notes.md notes.docx
+
+  Overwriting an original rich document asks first (section 14), because
+  anything the editor cannot show (images, tables, fonts, layout) is lost.
+  A literal asterisk can be written as \* so it is not read as formatting.
+
+  Limits: password-protected documents and ZIP64 archives (documents over
+  4 GB) cannot be opened. Each document part may expand to at most 256 MB.
+
+OPENING RULES
+  * Opening a file that is already open switches to its existing window.
+  * If the current window is an empty, untouched "untitled" document, the
+    opened file replaces it instead of adding a new window.
+  * Files without write permission open read-only.
+
+
+==============================================================================
+20. SYNTAX HIGHLIGHTING AND LANGUAGE DETECTION
+==============================================================================
+
+HOW THE LANGUAGE IS CHOSEN
+  1. Special file names (e.g. Makefile, Dockerfile, .bashrc, Gemfile).
+     Names beginning with Dockerfile, Containerfile or Makefile also count
+     (e.g. "Dockerfile.prod").
+  2. The file extension (case-insensitive).
+  3. A "#!" first line naming an interpreter, e.g. "#!/usr/bin/env python3"
+     or "#!/bin/bash -e". Version numbers are ignored (python3 -> python).
+  4. The first line's content: "<!DOCTYPE html" or "<html" -> HTML,
+     "<?xml" -> XML, "<?php" -> PHP, "diff --git" or "--- " -> Diff.
+  5. Otherwise: Plain Text (no highlighting).
+
+  Override it any time with Options > Document > Language or /lang <name>.
+
+SUPPORTED LANGUAGES (93)
+  Language                 /lang names                Extensions and file names
+  ----------------------   ------------------------   --------------------------
+  Plain Text               text txt plain             .txt .text .log .nfo
+                                                      .asc .readme .me .out,
+                                                      readme license copying
+                                                      authors changelog todo
+  Python                   python py                  .py .pyw .pyi .pyx .pxd
+                                                      .gyp .gypi .bzl .star
+                                                      .bazel .sconstruct .rpy
+                                                      .pyde, sconstruct
+                                                      sconscript build
+                                                      workspace build.bazel
+                                                      workspace.bazel
+                                                      tiltfile snakefile
+  HTML                     html htm xhtml             .html .htm .xhtml
+                                                      .shtml .vue .svelte
+                                                      .astro .jinja .jinja2
+                                                      .j2 .hbs .handlebars
+                                                      .mustache .ejs .tmpl
+                                                      .twig .liquid .njk
+                                                      .cshtml .razor .jsp
+                                                      .asp .aspx .gohtml
+                                                      .heex .leex .eex .erb
+  CSS                      css                        .css
+  JavaScript               javascript js jsx          .js .mjs .cjs .jsx .es6
+                                                      .gs
+  TypeScript               typescript ts tsx          .ts .tsx .mts .cts
+  JSON                     json jsonc json5           .json .jsonc .json5
+                                                      .geojson .topojson
+                                                      .webmanifest .ipynb
+                                                      .har .jsonl .ndjson
+                                                      .jsonld .avsc .code-
+                                                      workspace .sublime-
+                                                      settings .sublime-
+                                                      project .mcmeta .gltf
+                                                      .jsonnet .libsonnet,
+                                                      .babelrc .eslintrc
+                                                      .prettierrc
+                                                      composer.lock
+  Markdown                 markdown md                .md .markdown .mdown
+                                                      .mkd .mkdn .mdx .rst
+                                                      .adoc .org
+  XML                      xml svg                    .xml .svg .xsd .xsl
+                                                      .xslt .rss .atom .plist
+                                                      .csproj .vcxproj
+                                                      .fsproj .pom .xaml .kml
+                                                      .gpx .wsdl .resx
+                                                      .nuspec .storyboard
+                                                      .xib .opml .xlf .xliff
+                                                      .ui .fxml .xul .tmx
+                                                      .mxml .glade .props
+                                                      .targets .manifest
+                                                      .xaml .dtd .ent .rdf
+                                                      .owl .gml .graphml
+                                                      .musicxml .mathml .smil
+                                                      .tei .dbk .docbook
+  SCSS                     scss sass less             .scss .sass .less .styl
+  Rust                     rust rs                    .rs
+  C                        c h                        .c .h .ino
+  C++                      cpp c++ cxx hpp            .cpp .cc .cxx .c++ .hpp
+                                                      .hh .hxx .h++ .ipp .tpp
+                                                      .cu .cuh
+  C#                       csharp cs c#               .cs .csx
+  Java                     java                       .java .jav
+  Kotlin                   kotlin kt                  .kt .kts
+  Go                       go golang                  .go
+  Swift                    swift                      .swift
+  PHP                      php                        .php .phtml .php3 .php4
+                                                      .php5 .phps
+  Ruby                     ruby rb                    .rb .rake .gemspec .ru
+                                                      .rbw .podspec, rakefile
+                                                      gemfile vagrantfile
+                                                      podfile guardfile
+  Shell                    sh bash shell zsh          .sh .bash .zsh .ksh
+                                                      .fish .command .bats
+                                                      .ebuild .eclass .zsh-
+                                                      theme .tmux, .bashrc
+                                                      .bash_profile
+                                                      .bash_aliases .profile
+                                                      .zshrc .zprofile
+                                                      .zshenv pkgbuild .envrc
+                                                      configure .bash_logout
+                                                      .xinitrc .xprofile
+                                                      .xsession apkbuild
+                                                      .zlogin .zlogout .kshrc
+                                                      .mkshrc
+  PowerShell               powershell ps1 pwsh        .ps1 .psm1 .psd1
+  Batch                    bat cmd batch              .bat .cmd
+  Lua                      lua                        .lua .luau .rockspec
+  SQL                      sql mysql psql sqlite      .sql .ddl .dml .pgsql
+                                                      .psql .hql
+  YAML                     yaml yml                   .yaml .yml .clang-
+                                                      format .clangd, .clang-
+                                                      format .travis.yml
+  TOML                     toml                       .toml, cargo.lock
+                                                      pipfile poetry.lock
+  INI                      ini conf cfg properties    .ini .cfg .conf .config
+                           env                        .properties .prefs .inf
+                                                      .reg .desktop .service
+                                                      .socket .timer .mount
+                                                      .target .slice .env
+                                                      .editorconfig
+                                                      .gitconfig .npmrc .url
+                                                      .pls .m3u8 .ovpn .cnf
+                                                      .pypirc .wgconf,
+                                                      .gitconfig
+                                                      .editorconfig .npmrc
+                                                      .env .gitmodules
+                                                      .flake8 setup.cfg
+                                                      tox.ini
+  Makefile                 make makefile mk           .mk .mak .make,
+                                                      makefile gnumakefile
+                                                      bsdmakefile
+  Dockerfile               dockerfile docker          .dockerfile
+                           containerfile              .containerfile,
+                                                      dockerfile
+                                                      containerfile
+  Perl                     perl pl                    .pl .pm .t .pod
+  R                        r                          .r .rmd
+  Haskell                  haskell hs                 .hs .lhs
+  Lisp                     lisp clojure scheme elisp  .lisp .lsp .cl .el .clj
+                           racket                     .cljs .cljc .edn .scm
+                                                      .ss .rkt .fnl
+  Diff                     diff patch                 .diff .patch .rej
+  CSV                      csv tsv                    .csv .tsv .psv
+  Ada                      ada                        .adb .ads .ada
+  Assembly                 asm assembly nasm gas      .asm .s .nasm .a51 .inc
+                                                      .z80 .6502
+  AutoHotkey               autohotkey ahk             .ahk .ahk2
+  Awk                      awk gawk                   .awk .gawk .mawk
+  BibTeX                   bibtex bib biblatex        .bib
+  Bicep                    bicep                      .bicep .bicepparam
+  CMake                    cmake                      .cmake, cmakelists.txt
+                                                      cmakecache.txt
+  COBOL                    cobol cob                  .cob .cbl .cpy .cobol
+  Crystal                  crystal cr                 .cr
+  D                        d dlang                    .d .di
+  Dart                     dart                       .dart
+  Elixir                   elixir ex exs              .ex .exs, mix.lock
+  Elm                      elm purescript purs        .elm .purs
+  Erlang                   erlang erl                 .erl .hrl .escript
+                                                      .app.src, rebar.config
+                                                      rebar.lock
+  F#                       fsharp f# fs               .fs .fsi .fsx .fsscript
+  Fortran                  fortran f90                .f .for .ftn .f77 .f90
+                                                      .f95 .f03 .f08 .fpp
+  Git commit message       gitcommit commit           commit_editmsg
+                                                      merge_msg tag_editmsg
+                                                      git-rebase-todo
+                                                      squash_msg
+  Gleam                    gleam                      .gleam
+  Gnuplot                  gnuplot gp                 .gp .gnuplot .plt .gpi
+  GraphQL                  graphql gql                .graphql .gql .graphqls
+  Graphviz DOT             dot graphviz gv            .dot .gv
+  Groovy                   groovy gradle              .groovy .gvy .gy .gsh
+                                                      .gradle, jenkinsfile
+  Haxe                     haxe hx                    .hx .hxml
+  HCL / Terraform          hcl terraform tf           .tf .tfvars .hcl .nomad
+                                                      .tftest, .terraformrc
+                                                      terraform.rc
+  HTTP requests            http rest                  .http .rest
+  Ignore / attributes list gitignore ignore           .gitignore
+                           gitattributes codeowners   .dockerignore
+                                                      .npmignore
+                                                      .eslintignore
+                                                      .prettierignore
+                                                      .hgignore
+                                                      .gitattributes,
+                                                      .gitignore
+                                                      .dockerignore
+                                                      .npmignore
+                                                      .eslintignore
+                                                      .prettierignore
+                                                      .hgignore
+                                                      .gitattributes
+                                                      codeowners .gitkeep
+                                                      .ignore .rgignore
+                                                      .stignore
+  Julia                    julia jl                   .jl
+  Justfile                 just justfile              .just, justfile
+                                                      .justfile
+  LaTeX                    latex tex context          .tex .ltx .sty .cls
+                                                      .dtx .ins .bbx .cbx
+                                                      .lbx .mkiv .mkii
+  MATLAB / Octave          matlab octave              .octave .octaverc,
+                                                      .octaverc
+  Mermaid                  mermaid mmd                .mmd .mermaid
+  Meson                    meson                      meson.build
+                                                      meson_options.txt
+                                                      meson.options
+  Nim                      nim                        .nim .nims .nimble
+  Nix                      nix                        .nix
+  Objective-C              objc objective-c           .m .mm
+                           objectivec
+  OCaml                    ocaml ml reasonml          .ml .mli .mll .mly .re
+                                                      .rei
+  Pascal / Delphi          pascal delphi pas          .pas .pp .dpr .lpr .dpk
+                           freepascal                 .lpk
+  PlantUML                 plantuml puml              .puml .plantuml .pu
+                                                      .iuml
+  Gettext PO               po pot gettext             .po .pot
+  Prolog                   prolog                     .pro .prolog
+  Protocol Buffers         protobuf proto             .proto .proto3
+  Raku                     raku perl6                 .raku .rakumod
+                                                      .rakutest .p6 .pm6 .pl6
+  Roff / man page          roff man troff groff       .man .roff .mdoc .1 .2
+                           nroff                      .3 .4 .5 .6 .7 .8 .9
+                                                      .1m .3p .ms
+  Scala                    scala                      .scala .sc .sbt
+  Server config            nginx apache caddy         .nginx .vhost
+                           htaccess config            .htaccess, .htaccess
+                                                      httpd.conf apache2.conf
+                                                      nginx.conf caddyfile
+                                                      procfile haproxy.cfg
+                                                      squid.conf sshd_config
+                                                      ssh_config hosts fstab
+                                                      crontab sudoers
+  Shader (GLSL/HLSL)       glsl hlsl shader wgsl      .glsl .vert .frag .geom
+                           metal                      .comp .tesc .tese .hlsl
+                                                      .hlsli .fx .fxh .wgsl
+                                                      .metal .shader .cginc
+                                                      .compute
+  Solidity                 solidity sol               .sol
+  Subtitles (SRT/VTT)      srt vtt subtitles webvtt   .srt .vtt .sbv .sub
+  Tcl                      tcl tk                     .tcl .tk .itcl .tm .exp
+  Vala                     vala                       .vala .vapi
+  Verilog                  verilog systemverilog sv   .v .vh .sv .svh
+  VHDL                     vhdl vhd                   .vhd .vhdl .vho .vht
+  Visual Basic             vb vbnet vbscript vba      .vb .vbs .bas .frm .vba
+                           basic                      .vbhtml
+  Vim script               vim vimscript viml         .vim .vimrc, .vimrc
+                                                      _vimrc .gvimrc _gvimrc
+                                                      .exrc init.vim
+  WebAssembly text         wat wast wasm              .wat .wast
+  Zig                      zig                        .zig .zon
+  Hex                      hex binary                 used automatically for
+                                                      binary files
+
+  Shebang interpreters recognised: python, node, deno, bun, ts-node, php,
+  ruby, sh, bash, zsh, ksh, dash, fish, lua, perl, rscript, groovy, elixir,
+  escript, julia, nim, crystal, tclsh, wish, expect, awk, gawk, raku, octave.
+
+  ".m" files are shared by Objective-C and MATLAB/Octave: a file whose first
+  line starts with "%", "function", "clear" or "clc" is treated as MATLAB.
+
+  Converted documents (section 19) are highlighted as Markdown.
+
+WHAT IS HIGHLIGHTED
+  Programming languages: keywords, types (including capitalised names in
+  many languages), built-in functions, constants (true/false/None, ALL_CAPS
+  names), strings and escape sequences (\n, \t...), numbers (including hex,
+  exponents and digit separators), comments (line and block), function names
+  (before "(" and after def/fn/function), decorators/annotations (@name),
+  preprocessor lines (#include, #define), operators and punctuation.
+
+  Language-specific details:
+  * Python: triple-quoted strings across lines; f-, r-, b- and u-prefixed
+    strings (raw strings ignore backslashes); decorators.
+  * HTML / XML: tags, attribute names, quoted values, entities (&amp;),
+    comments across lines, <!DOCTYPE>, and <?xml ?>. The contents of <style>
+    are highlighted as CSS and <script> as JavaScript.
+  * CSS / SCSS / LESS: element, .class and #id selectors, pseudo-classes
+    (:hover, ::before), attribute selectors, @rules, property names, values,
+    numbers with units, #hex colours, !important, functions like rgba(), the
+    inside of url(), nested rules, block comments (and // in SCSS/LESS), and
+    $variables in SCSS.
+  * JavaScript / TypeScript: template literals (`...`) across lines.
+  * Rust: 'a lifetimes are told apart from 'x' character literals.
+  * Shell, PHP, Perl, Makefile, Dockerfile: $variables and ${...}.
+  * JSON: object keys separately from string values.
+  * YAML / TOML / INI: keys, [section] headers, comments.
+  * Markdown: headings, emphasis, bold, strikethrough, `code`, fenced code
+    blocks (``` or ~~~) across lines, indented code, quotes, list and task
+    markers, links, images, auto-links, inline HTML and comments, horizontal
+    rules and table pipes.
+  * Diff: added lines, removed lines, file headers and @@ hunk markers.
+  * LaTeX, BibTeX and man pages (roff): \commands are highlighted.
+  * Config formats (Terraform/HCL, Nix, CMake, Meson, server configs,
+    .gitignore, git commit messages): comments, keys and variables.
+
+  Highlighting is calculated line by line and remembered, so even large files
+  stay responsive. Only the edited part is recalculated.
+
+
+==============================================================================
+21. AUTOMATIC INDENTATION AND SMART EDITING
+==============================================================================
+
+INDENT STYLE
+  When a file is opened, it is checked for lines that begin with a tab. If
+  any do, the document indents with tabs; otherwise with spaces. Change it
+  with Options > Document > Toggle tabs/spaces, /tabs or /spaces.
+
+  Default tab widths: 2 for HTML, XML, JSON, YAML, Markdown, Ruby, Haskell
+  and Lisp; 4 for everything else. Change it with /tabsize or Options >
+  Document > Tab width.
+
+ON ENTER
+  * The new line copies the current line's indentation.
+  * One extra level is added when the line (ignoring any trailing comment)
+    ends with an opener for its language:
+        Python ....................... :
+        C-style, CSS, JSON ........... {  [  (
+        YAML ......................... :  |  >
+        Ruby ......................... do  |  then
+        Lua .......................... then  do  else  function()  {
+        Shell ........................ then  do  {
+        Haskell ...................... where  do  of  =
+        HTML/XML ..................... after an opening tag such as <div>
+                                       (not after self-closing or void tags
+                                       like <br>, <img>, <meta>, or a tag
+                                       closed on the same line)
+  * Pressing Enter between a pair such as {|}, [|], (|), or between <div>|
+    and </div>, opens a new indented line and moves the closing part onto
+    its own line below.
+  * Pressing Enter inside the leading whitespace does not add extra
+    indentation.
+
+AUTOMATIC DEDENT
+  In brace-style languages, typing } ] or ) as the only character on an
+  indented line removes one indentation level so it lines up with its opener.
+
+SMART BACKSPACE
+  In space-indented documents, Backspace inside the indentation removes back
+  to the previous indentation stop (for example 4 spaces at once), rather
+  than one space.
+
+
+==============================================================================
+22. HOW THE SCREEN ADAPTS TO WINDOW SIZE
+==============================================================================
+
+The layout is recalculated every time the screen is drawn, so resizing the
+terminal (or a tmux/screen pane) takes effect immediately:
+
+  * Sidebar width is 1/6 of the screen width, kept between 14 and 28
+    columns. Below 50 columns wide the sidebar hides automatically
+    (F5 shows it again once there is room).
+  * The line-number gutter grows with the number of lines in the document,
+    and hides when the editor area is under 24 columns.
+  * The topic bar disappears below 8 rows. Its key hints shorten, then
+    vanish, on narrow screens.
+  * Status bar segments are dropped in order of importance on narrow
+    screens.
+  * The menu, file browser, dialogs, help and log are centred and sized to
+    the screen.
+  * Below 20 columns or 3 rows, the program shows only "window too small"
+    until the terminal is enlarged.
+  * Page view chooses how many pages fit (section 18) and falls back to the
+    continuous view when not even one page fits.
+  * The view keeps the cursor visible: 3 lines of context above and below
+    when there is room, and horizontal scrolling for long lines (lines are
+    not wrapped).
+
+
+==============================================================================
+23. MESSAGES, THE MESSAGE LOG AND HELP
+==============================================================================
+
+MESSAGES
+  Results of actions appear on the input line in IRC style, e.g.:
+      -!- joined /home/me/notes.txt (42 lines, UTF-8, LF)
+      -!- saved /home/me/notes.txt (42 lines, 1203 bytes)
+      -!- parted notes.txt
+      -!- not found: banana
+  Information, warnings and errors have different colours. A message
+  disappears after about 10 seconds.
+
+MESSAGE LOG (/log or Options > Message log)
+  Lists every message from this session (the most recent 1,000 or so). It
+  opens at the bottom (newest messages). /clear empties it.
+
+HELP (F1, /help)
+  A scrollable summary of keys and commands.
+
+  In the help and log viewers:
+    Up / Down, k / j        Scroll one line
+    PageUp / PageDown, Space
+                            Scroll a page
+    Home / End, g / G       Top / bottom
+    Mouse wheel             Scroll
+    Any other key or click  Close
+
+
+==============================================================================
+24. LIMITS AND KNOWN BEHAVIOURS
+==============================================================================
+
+  * In the continuous view long lines scroll sideways unless "Wrap long
+    lines" is on. Use Reflow (Alt+Q) to re-wrap prose permanently.
+  * Page view lays out plain text in fixed character cells; it is not an
+    exact preview of how a word processor will paginate the same document.
+  * Search and replace use plain text, not regular expressions. Search is
+    one line at a time; replace always changes every occurrence.
+  * Ctrl+V pastes only the internal clipboard; use the terminal's paste for
+    text from other programs (section 7).
+  * Theme and layout settings are only saved when you turn on remembering
+    (Options > Settings). Command history and undo history are never saved.
+  * In Save As, Enter saves rather than entering a highlighted folder while
+    the name box has text; use Tab to enter folders (section 13).
+  * Changing encoding or line endings marks the document as modified even
+    though the visible text did not change, so the change gets saved.
+  * In programming languages, text-style formatting other than Inline code
+    is unavailable (there is no "bold" in Python).
+  * Rust raw strings (r#"..."#) and some rarely used string forms may be
+    highlighted imperfectly. Highlighting never changes your text.
+  * Bracket matching searches up to 50,000 characters away and ignores
+    whether brackets are inside strings or comments.
+  * The JSON formatter checks structure but not every grammar rule.
+  * Maximum file size: 256 MB. The hex view shows at most the first 4 MB.
+  * OSC 52 copies above 100,000 bytes stay in the internal clipboard.
+  * Documents keep only text, headings, bullet lists, bold and italic when
+    saved (section 19). Spreadsheets, slides and e-books are read-only
+    formats; save their text under another name. RTF has no reliable list
+    structure, so lists read from other programs' RTF files become bullets
+    based on the bullet character used.
+
+
+==============================================================================
+25. TROUBLESHOOTING
+==============================================================================
+
+A KEY DOES NOTHING
+  Some terminals, terminal multiplexers and desktop environments capture
+  certain keys before the program sees them:
+    * F1, F10, F11: often taken by the terminal (help, menu bar, fullscreen).
+      Use F2 or Ctrl+P for the menu; /help for help.
+    * Alt+number or Alt+arrows: may switch terminal tabs. Use Ctrl+PageUp/
+      PageDown, /win or the sidebar instead.
+    * Ctrl+/: may arrive as Ctrl+7 or Ctrl+_ (both accepted) or not at all;
+      use /comment or the menu.
+    * Ctrl+Shift+S: many terminals send it as plain Ctrl+S; use F12 or
+      /saveas.
+    * Ctrl+Space: some systems use it to switch keyboard layouts; use
+      double-click or Shift+arrows.
+    * Inside tmux or screen: function keys may need "set -g xterm-keys on"
+      and a correct TERM (e.g. tmux-256color or screen-256color).
+    * macOS Terminal: enable "Use Option as Meta key" for Alt shortcuts.
+  Every action is also available from the options menu (F2 / Ctrl+P) and
+  most from slash commands.
+
+COLOURS LOOK WRONG OR WASHED OUT
+  Make sure your terminal supports 256 colours and TERM is set accordingly
+  (e.g. xterm-256color). Frost and Solar need a true-colour terminal (most
+  modern ones; set COLORTERM=truecolor if needed). Try another theme from
+  Options > View > Theme.
+
+A DOCUMENT WON'T OPEN ("encrypted", "not a ZIP archive", "missing ...")
+  The file may be password-protected, damaged, or not really the format its
+  extension claims. Open and re-save it in its original program, or export
+  it to .odt/.docx/.rtf first.
+
+I CAN'T SELECT TEXT WITH THE MOUSE TO COPY IT INTO ANOTHER PROGRAM
+  Press F9 to turn off mouse capture, or hold Shift while dragging. Or copy
+  inside the editor (Ctrl+C): with OSC 52 support it reaches the system
+  clipboard.
+
+COPY DOESN'T REACH MY SYSTEM CLIPBOARD
+  Your terminal may not support OSC 52 or may have it disabled. In tmux, add
+  "set -g set-clipboard on" to ~/.tmux.conf.
+
+A FILE OPENS AS HEX
+  It was detected as binary (it contains NUL bytes or many control
+  characters). Hex views are read-only by design.
+
+"CHARACTER ... CANNOT BE STORED AS LATIN-1"
+  The document was opened as Latin-1 and now contains a character Latin-1
+  cannot represent. Run "/encoding utf-8" and save again.
+
+"DIRECTORY DOES NOT EXIST" WHEN SAVING
+  The folder in the typed path doesn't exist. Create it first, or pick an
+  existing folder in the browser.
+
+THE SCREEN IS GARBLED AFTER A CRASH
+  The program restores the terminal even when it crashes. If something is
+  still wrong, type "reset" and press Enter (even if you can't see it).
+
+
+==============================================================================
+26. QUICK REFERENCE CARD
+==============================================================================
+
+ FILES / WINDOWS                       EDITING
+ Ctrl+N    new                         Ctrl+Z / Ctrl+Y   undo / redo
+ Ctrl+O    open (browser)              Ctrl+X / C / V    cut / copy / paste
+ Ctrl+S    save                        Ctrl+A            select all
+ F12       save as                     Ctrl+Space        select word
+ Ctrl+W    close window                Ctrl+D            duplicate line
+ Ctrl+Q    quit                        Ctrl+K            delete line
+ Alt+1..9  go to window                Ctrl+J            join lines
+ Alt+←/→   prev / next window          Alt+↑ / Alt+↓     move line
+ F6        window list focus           Tab / Shift+Tab   indent / outdent
+                                       Insert            overwrite mode
+ SEARCH                                Ctrl+Bksp/Del     delete word
+ Ctrl+F    find (incremental)
+ F3 / S-F3 next / previous             FORMATTING
+ Ctrl+R    replace all                 Ctrl+B / T / U    bold/italic/underline
+ Ctrl+G    go to line                  Ctrl+E            inline code
+ Esc       clear selection/highlight   Alt+H             heading
+                                       Ctrl+/            toggle comment
+ VIEW                                  Alt+U / L / T     upper/lower/title
+ F1  help          F2/Ctrl+P menu      Alt+Q             reflow paragraph
+ F4  line numbers  F5 sidebar
+ F7  whitespace    F8 next theme       COMMAND LINE
+ F9  mouse capture                     Ctrl+L            focus input line
+                                       Tab               complete
+ MOVEMENT                              ↑ / ↓             history
+ Ctrl+←/→  word    Home  smart home    /help             all commands
+ Ctrl+Home/End     document start/end
+ PgUp/PgDn         page
+ Ctrl+↑/↓          scroll view
+ Alt+PgUp/PgDn     spread of pages (page view)
+
+ PAGES & SETTINGS
+ Options › View › Page view   Off / Auto / 1-8 pages   (/pages)
+ Options › View › Page size   Letter, A4, Legal...     (/pagesize)
+ Options › View › Page scaling  Actual / Fill window    (/pagescale)
+ Alt+Enter                    insert page break        (/pagebreak)
+ Options › Settings           remember theme / layout  (/remember)
+
+==============================================================================
+                              End of manual
+==============================================================================

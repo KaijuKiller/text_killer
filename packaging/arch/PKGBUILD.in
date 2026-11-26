@@ -1,0 +1,30 @@
+# Packages the prebuilt, statically linked text_killer binaries.
+# Build and install from the folder holding this file and the tarballs:
+#     makepkg -si
+pkgname=text_killer-bin
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc="Terminal text editor with an IRC-style interface, page view and office document support"
+arch=('x86_64' 'aarch64')
+license=('MIT')
+provides=('text_killer')
+conflicts=('text_killer')
+options=('!strip' '!debug')
+source_x86_64=("text_killer-${pkgver}-linux-x86_64.tar.gz")
+source_aarch64=("text_killer-${pkgver}-linux-arm64.tar.gz")
+sha256sums_x86_64=('@SHA_X86_64@')
+sha256sums_aarch64=('@SHA_ARM64@')
+
+package() {
+  local dir
+  case "$CARCH" in
+    x86_64) dir="text_killer-${pkgver}-linux-x86_64" ;;
+    aarch64) dir="text_killer-${pkgver}-linux-arm64" ;;
+  esac
+  cd "$dir"
+  install -Dm755 text_killer "$pkgdir/usr/bin/text_killer"
+  install -Dm644 text_killer.1 "$pkgdir/usr/share/man/man1/text_killer.1"
+  install -Dm644 text_killer.desktop "$pkgdir/usr/share/applications/text_killer.desktop"
+  install -Dm644 MANUAL.txt "$pkgdir/usr/share/doc/text_killer/MANUAL.txt"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/text_killer/LICENSE"
+}

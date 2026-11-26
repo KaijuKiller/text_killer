@@ -1,0 +1,59 @@
+.TH TEXT_KILLER 1 "2026-11-20" "text_killer @VERSION@" "User Commands"
+.SH NAME
+text_killer \- terminal text editor with an IRC-style interface
+.SH SYNOPSIS
+.B text_killer
+.RI [ FILE ...]
+.br
+.B text_killer \-\-cat
+.I FILE
+.br
+.B text_killer \-\-convert
+.I INPUT OUTPUT
+.SH DESCRIPTION
+.B text_killer
+is a full-screen terminal text editor whose look is modelled on IRC clients:
+open documents are listed on the left like channels, with a topic bar,
+status bar and a command line at the bottom.
+.PP
+By default documents are shown as US Letter pages (65 columns by 54 lines)
+side by side, as many as fit the window, at actual size or stretched to
+fill it. The original continuous
+view, page sizes, themes and other options are in the options menu
+(F2 or Ctrl+P); they can be remembered across sessions under
+Options \(-> Settings.
+.PP
+It highlights 93 programming and markup languages, opens office documents
+and e-books (.odt, .ods, .odp, .docx, .xlsx, .pptx, .rtf, .epub, .gz) as
+editable text, and saves .odt, .docx and .rtf with headings, lists, bold,
+italic and page breaks.
+.SH OPTIONS
+.TP
+.BI \-\-cat " FILE"
+Print FILE as text (documents are converted) and exit.
+.TP
+.BI \-\-convert " INPUT OUTPUT"
+Convert INPUT to OUTPUT; the format comes from OUTPUT's extension.
+.TP
+.BR \-h ", " \-\-help
+Show usage and exit.
+.TP
+.BR \-V ", " \-\-version
+Show the version and exit.
+.SH KEYS
+F1 help, F2 or Ctrl+P menu, Ctrl+O open, Ctrl+S save, F12 save as,
+Ctrl+W close, Ctrl+Q quit, Ctrl+F find, Ctrl+R replace, Ctrl+G go to line,
+Alt+Enter page break, Alt+1..9 switch window.
+See the manual for the complete list.
+.SH FILES
+.TP
+.I ~/.config/text_killer/settings.conf
+Remembered settings (Linux; %APPDATA%\\text_killer on Windows,
+~/Library/Application Support/text_killer on macOS). Created only when
+"Remember" is turned on.
+.SH ENVIRONMENT
+.TP
+.B TEXT_KILLER_CONFIG
+Use this settings file instead of the default location.
+.SH SEE ALSO
+The full manual: /usr/share/doc/text_killer/MANUAL.txt

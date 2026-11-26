@@ -1,0 +1,44 @@
+# Packages the prebuilt, statically linked text_killer binary.
+%global debug_package %{nil}
+%global __os_install_post %{nil}
+%global __strip /bin/true
+
+Name:           text_killer
+Version:        @VERSION@
+Release:        1
+Summary:        Terminal text editor with an IRC-style interface
+License:        MIT
+Source0:        text_killer
+Source1:        text_killer.1
+Source2:        text_killer.desktop
+Source3:        MANUAL.txt
+Source4:        LICENSE
+
+%description
+text_killer is a terminal text editor with an IRC-client look. It shows
+documents as side-by-side pages (US Letter by default), highlights 93
+languages, opens office documents and e-books (.odt, .docx, .xlsx, .pptx,
+.rtf, .epub and more) as editable text, and saves .odt, .docx and .rtf.
+
+%prep
+
+%build
+
+%install
+install -Dm755 %{SOURCE0} %{buildroot}%{_bindir}/text_killer
+install -Dm644 %{SOURCE1} %{buildroot}%{_mandir}/man1/text_killer.1
+install -Dm644 %{SOURCE2} %{buildroot}%{_datadir}/applications/text_killer.desktop
+install -Dm644 %{SOURCE3} %{buildroot}%{_docdir}/%{name}/MANUAL.txt
+install -Dm644 %{SOURCE4} %{buildroot}%{_datadir}/licenses/%{name}/LICENSE
+
+%files
+%{_bindir}/text_killer
+%{_mandir}/man1/text_killer.1*
+%{_datadir}/applications/text_killer.desktop
+%{_docdir}/%{name}/MANUAL.txt
+%license %{_datadir}/licenses/%{name}/LICENSE
+
+%changelog
+* Fri Nov 20 2026 text_killer <text_killer@localhost> - @VERSION@-1
+- Page scaling (actual size or fill window), up to 12 pages side by side
+- Page view, saved settings, page breaks, installers
