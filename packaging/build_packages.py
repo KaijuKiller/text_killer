@@ -227,7 +227,7 @@ def build_deb(work: Path):
         write(
             docdir / "copyright",
             "Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/\n"
-            "Upstream-Name: text_killer\n\nFiles: *\nCopyright: 2026 the text_killer authors\nLicense: MIT\n "
+            "Upstream-Name: text_killer\n\nFiles: *\nCopyright: 2026 kaiju_killer\nLicense: MIT\n "
             + "\n ".join(l if l else "." for l in (ROOT / "LICENSE").read_text().splitlines()[2:])
             + "\n\nFiles: bundled third-party components\nComment: The text_killer program includes open-source "
             "libraries and runtime code\n whose copyright and license notices are reproduced in\n "
@@ -238,7 +238,7 @@ def build_deb(work: Path):
         write(
             root / "DEBIAN/control",
             f"Package: text-killer\nVersion: {VERSION}\nArchitecture: {arch}\n"
-            f"Maintainer: text_killer <text_killer@localhost>\nInstalled-Size: {size_kb}\n"
+            f"Maintainer: kaiju_killer <text_killer@localhost>\nInstalled-Size: {size_kb}\n"
             f"Section: editors\nPriority: optional\nDescription: {SUMMARY}\n{long_desc}\n",
         )
         for p in root.rglob("*"):
@@ -293,7 +293,7 @@ def build_arch(work: Path):
         write(d / f"makepkg-{carch}.conf", c)
         shutil.chown(d / f"makepkg-{carch}.conf", "builder", "builder")
         run(["su", "builder", "-c",
-             f"cd {d} && PACKAGER='text_killer <text_killer@localhost>' makepkg --config makepkg-{carch}.conf -f --nodeps --noconfirm"],
+             f"cd {d} && PACKAGER='kaiju_killer <text_killer@localhost>' makepkg --config makepkg-{carch}.conf -f --nodeps --noconfirm"],
             stdout=subprocess.DEVNULL)
     for p in d.glob("*.pkg.tar.zst"):
         shutil.copyfile(p, OUT / p.name)

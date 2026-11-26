@@ -37,7 +37,7 @@ cargo build --release
 * **Saved settings**: optionally remember the theme and/or the page view and layout across sessions (Options › Settings).
 * Left sidebar lists open documents like an IRC client's channel list (F6 to focus, Alt-1..9 to jump).
 * Options menu (F2 / Ctrl-P) for File, Edit, Format, Lines, View (Theme, Page view, Page size), Document and Settings.
-* 11 colour themes: **Crimson** (red & black, the default), Midnight, Matrix, Amber, Ocean, Frost, Solar, Irssi, WeeChat, mIRC and Paper.
+* 11 colour themes: **Crimson** (red & black, the default), Midnight, Matrix, Amber, Ocean, Frost, Solar, Irssi, WeeChat, Classic and Paper.
 * File browser for opening and saving (Ctrl-O, F12).
 * IRC-style command line (Ctrl-L), e.g. `/open`, `/saveas`, `/find`, `/replace`, `/goto`, `/pages`, `/theme`.
 * Syntax highlighting for 93 languages and file types.
@@ -54,5 +54,18 @@ cargo build --release
 | Six of the eleven themes | The original continuous view |
 
 Press **F1** in the editor for key bindings. The full manual is in `MANUAL.txt`.
+
+## Credits
+
+Created by **kaiju_killer**, who came up with the idea, chose the features and
+publishes the releases.
+
+The code, documentation, packaging and installers were written by **Claude**
+(Claude Opus 5.5, an AI model by [Anthropic](https://www.anthropic.com)) using
+[Claude Code](https://claude.com/claude-code), working from kaiju_killer's
+requests and feedback. The commit history shows Claude as the author for
+this reason.
+
+## License
 
 License: MIT (see [`LICENSE`](LICENSE)). Notices for the open-source components compiled into the program are in [`THIRD-PARTY-LICENSES.txt`](THIRD-PARTY-LICENSES.txt) (also shown by `text_killer --licenses`); regenerate it with `python3 packaging/third_party_licenses.py` after changing dependencies.

@@ -2,6 +2,7 @@
                               TEXT_KILLER MANUAL
                                  Version 1.3.1
           A terminal text editor with an IRC-inspired interface
+              Created by kaiju_killer, written by Claude (Anthropic)
 ==============================================================================
 
 
@@ -72,6 +73,14 @@ Main features:
     themes chosen from the options menu, with the black-and-red "Crimson"
     theme as the default.
   * The layout adjusts automatically when the terminal is resized.
+
+CREDITS
+  text_killer was created by kaiju_killer, who came up with the idea, chose
+  the features and published the releases. The code, documentation,
+  packaging and installers were written by Claude (Claude Opus 5.5, an AI
+  model made by Anthropic) using Claude Code, working from kaiju_killer's
+  requests and feedback.
+  Source code: https://github.com/KaijuKiller/text_killer
 
 
 ==============================================================================
@@ -946,7 +955,7 @@ COMMAND REFERENCE
                           latin1 (or iso-8859-1). Alias: /enc
     /eol <style>          lf (unix), crlf (dos, windows), cr (mac)
     /theme [name]         crimson, midnight, matrix, amber, ocean, frost,
-                          solar, irssi, weechat, mirc or paper (display
+                          solar, irssi, weechat, classic or paper (display
                           names work too); without a name, the next theme
 
   Formatting
@@ -1062,8 +1071,9 @@ THEMES
   Solar     Warm "solarized dark" palette (24-bit colour).
   Irssi     Blue status bars on your terminal's own background, cyan accents.
   WeeChat   Dark grey bars with green and cyan accents.
-  mIRC      A light theme: white background, grey bars, classic mIRC blue and
-            red accents.
+  Classic   A light theme: white background, grey bars, and the blue and red
+            accents of classic IRC clients. (Called "mIRC" before; the old
+            name still works with /theme and in saved settings.)
   Paper     A light theme: black ink on white with red accents.
 
   Most themes use 256-colour codes. Frost and Solar use 24-bit ("true

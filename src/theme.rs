@@ -238,10 +238,10 @@ pub static WEECHAT: Theme = Theme {
     ),
 };
 
-/// mIRC-like: light, high-contrast with classic mIRC colours.
+/// Classic: light, high-contrast with the colours of classic IRC clients.
 pub static MIRC: Theme = Theme {
-    id: "mirc",
-    name: "mIRC",
+    id: "classic",
+    name: "Classic",
     blurb: "light, classic colours",
     bg: Color::White,
     fg: Color::Black,
@@ -515,6 +515,8 @@ pub static THEMES: &[&Theme] = &[&CRIMSON, &MIDNIGHT, &MATRIX, &AMBER, &OCEAN, &
 /// Finds a theme by id or display name (case-insensitive).
 pub fn find(name: &str) -> Option<usize> {
     let n = name.trim();
+    // "Classic" was called "mIRC" up to release 1.3.1; keep old settings working.
+    let n = if n.eq_ignore_ascii_case("mirc") { "classic" } else { n };
     THEMES.iter().position(|t| t.id.eq_ignore_ascii_case(n) || t.name.eq_ignore_ascii_case(n))
 }
 
@@ -527,6 +529,8 @@ mod tests {
         assert_eq!(THEMES[0].name, "Crimson");
         assert_eq!(find("CRIMSON"), Some(0));
         assert_eq!(find("Frost"), Some(5));
+        assert_eq!(find("mirc"), find("classic"));
+        assert!(find("classic").is_some());
         let mut ids: Vec<_> = THEMES.iter().map(|t| t.id).collect();
         ids.sort_unstable();
         ids.dedup();

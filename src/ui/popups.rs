@@ -62,7 +62,7 @@ COMMAND LINE (^L)  — Tab completes commands and paths, ↑↓ history
   /lang <name>   /tabsize <n>  /tabs  /spaces  /eol lf|crlf|cr
   /encoding utf-8|utf-8-bom|utf-16le|utf-16be|latin1
   /theme [crimson|midnight|matrix|amber|ocean|frost|solar|irssi|weechat|
-          mirc|paper]   /win <n|name>  /next  /prev
+          classic|paper]   /win <n|name>  /next  /prev
   /tag <name> [attrs]  wrap selection in an HTML tag
   /upper /lower /title /sort [desc] /uniq /trim /comment /bold /italic
   /json [min]  /reflow [width]  /log  /clear  /menu  /help
@@ -93,6 +93,10 @@ FORMATS
   Erlang, Haskell, OCaml, F#, Julia, Nim, Lua, R, Fortran, Pascal, Ada, COBOL,
   Assembly, Verilog, VHDL, GLSL/HLSL, Terraform, Nix, GraphQL, Protobuf,
   CMake, LaTeX, man pages and more (Options › Document › Language).
+
+ABOUT
+  Created by kaiju_killer. Written by Claude (Claude Opus 5.5, an AI model by
+  Anthropic) using Claude Code, from kaiju_killer's requests and feedback.
 
 LICENSES
   text_killer is MIT-licensed. Run  text_killer --licenses  to see its license
