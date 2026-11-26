@@ -1,6 +1,6 @@
 ==============================================================================
                               TEXT_KILLER MANUAL
-                                 Version 1.3.1
+                                 Version 1.3.2
           A terminal text editor with an IRC-inspired interface
               Created by kaiju_killer, written by Claude (Anthropic)
 ==============================================================================

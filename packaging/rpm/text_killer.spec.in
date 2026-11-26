@@ -42,6 +42,10 @@ install -Dm644 %{SOURCE5} %{buildroot}%{_datadir}/licenses/%{name}/THIRD-PARTY-L
 %license %{_datadir}/licenses/%{name}/THIRD-PARTY-LICENSES.txt
 
 %changelog
+* Thu Nov 26 2026 kaiju_killer <text_killer@localhost> - 1.3.2-1
+- Copyright holder kaiju_killer; credits for kaiju_killer and Claude
+- Rename the mIRC theme to Classic
+
 * Thu Nov 26 2026 kaiju_killer <text_killer@localhost> - 1.3.1-1
 - Include third-party license notices; add --licenses option
 
