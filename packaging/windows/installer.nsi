@@ -68,6 +68,7 @@ Section "text_killer" SecMain
   File "${SRCDIR}\text_killer.exe"
   File "${SRCDIR}\MANUAL.txt"
   File "${SRCDIR}\LICENSE.txt"
+  File "${SRCDIR}\THIRD-PARTY-LICENSES.txt"
   WriteUninstaller "$INSTDIR\uninstall.exe"
 
   ; --- Add to the user's PATH -------------------------------------------
@@ -122,6 +123,7 @@ Section "Uninstall"
   Delete "$INSTDIR\text_killer.exe"
   Delete "$INSTDIR\MANUAL.txt"
   Delete "$INSTDIR\LICENSE.txt"
+  Delete "$INSTDIR\THIRD-PARTY-LICENSES.txt"
   Delete "$INSTDIR\uninstall.exe"
   RMDir "$INSTDIR"
 

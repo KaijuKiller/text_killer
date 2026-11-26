@@ -7,7 +7,8 @@ Run from the project root after cross-compiling (see packaging/README.txt):
 
 Output goes to dist/<version>/:
   portable:   linux (x86_64, arm64) .tar.gz, windows .zip, macos .zip (x2)
-  installers: .deb, .rpm, Arch .pkg.tar.zst (+PKGBUILD), Windows setup .exe,
+  installers: .deb, .rpm, Arch .pkg.tar.zst (+PKGBUILD), Windows setup .exe
+              (also zipped),
               macOS installer .zip (install.command + build-pkg.sh)
 """
 
@@ -28,6 +29,7 @@ PKG = ROOT / "packaging"
 VERSION = re.search(r'^version = "([^"]+)"', (ROOT / "Cargo.toml").read_text(), re.M).group(1)
 OUT = ROOT / "dist" / VERSION
 TARGET = ROOT / "target"
+NOTICES = "THIRD-PARTY-LICENSES.txt"
 
 BINARIES = {
     "linux-x86_64": TARGET / "x86_64-unknown-linux-musl/release/text_killer",
@@ -181,6 +183,7 @@ def build_portable(work: Path):
         copy(BINARIES[label], d / "text_killer", 0o755)
         copy(ROOT / "MANUAL.txt", d / "MANUAL.txt")
         copy(ROOT / "LICENSE", d / "LICENSE")
+        copy(ROOT / NOTICES, d / NOTICES)
         write(d / "text_killer.1", sub((PKG / "text_killer.1").read_text()))
         copy(PKG / "text_killer.desktop", d / "text_killer.desktop")
         copy(PKG / "linux/install.sh", d / "install.sh", 0o755)
@@ -191,6 +194,7 @@ def build_portable(work: Path):
     copy(BINARIES["windows-x86_64"], d / "text_killer.exe", 0o755)
     write(d / "MANUAL.txt", (ROOT / "MANUAL.txt").read_text().replace("\n", "\r\n"))
     write(d / "LICENSE.txt", (ROOT / "LICENSE").read_text().replace("\n", "\r\n"))
+    write(d / NOTICES, (ROOT / NOTICES).read_text().replace("\n", "\r\n"))
     write(d / "INSTALL.txt", sub(INSTALL_WINDOWS).replace("\n", "\r\n"))
     zip_dir(d, OUT / f"{d.name}.zip")
 
@@ -202,6 +206,7 @@ def build_portable(work: Path):
         copy(BINARIES[key], d / "text_killer", 0o755)
         copy(ROOT / "MANUAL.txt", d / "MANUAL.txt")
         copy(ROOT / "LICENSE", d / "LICENSE")
+        copy(ROOT / NOTICES, d / NOTICES)
         text = sub(INSTALL_MAC_PORTABLE).replace("@WHICH@", which).replace("@FOLDER@", d.name)
         write(d / "INSTALL.txt", text)
         zip_dir(d, OUT / f"{d.name}.zip")
@@ -218,12 +223,15 @@ def build_deb(work: Path):
         copy(PKG / "text_killer.desktop", root / "usr/share/applications/text_killer.desktop")
         docdir = root / "usr/share/doc/text-killer"
         copy(ROOT / "MANUAL.txt", docdir / "MANUAL.txt")
+        copy(ROOT / NOTICES, docdir / NOTICES)
         write(
             docdir / "copyright",
             "Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/\n"
             "Upstream-Name: text_killer\n\nFiles: *\nCopyright: 2026 the text_killer authors\nLicense: MIT\n "
             + "\n ".join(l if l else "." for l in (ROOT / "LICENSE").read_text().splitlines()[2:])
-            + "\n",
+            + "\n\nFiles: bundled third-party components\nComment: The text_killer program includes open-source "
+            "libraries and runtime code\n whose copyright and license notices are reproduced in\n "
+            "/usr/share/doc/text-killer/THIRD-PARTY-LICENSES.txt\n",
         )
         size_kb = sum(p.stat().st_size for p in root.rglob("*") if p.is_file()) // 1024 + 1
         long_desc = "\n".join(" " + (l if l else ".") for l in DESCRIPTION.splitlines())
@@ -249,6 +257,7 @@ def build_rpm(work: Path):
         copy(PKG / "text_killer.desktop", src / "text_killer.desktop")
         copy(ROOT / "MANUAL.txt", src / "MANUAL.txt")
         copy(ROOT / "LICENSE", src / "LICENSE")
+        copy(ROOT / NOTICES, src / NOTICES)
         spec = top / "SPECS/text_killer.spec"
         write(spec, sub((PKG / "rpm/text_killer.spec.in").read_text()))
         run(["rpmbuild", "-bb", "--quiet", "--target", f"{arch}-linux", "--define", f"_topdir {top}",
@@ -296,8 +305,15 @@ def build_windows_installer(work: Path):
     copy(BINARIES["windows-x86_64"], d / "text_killer.exe", 0o755)
     write(d / "MANUAL.txt", (ROOT / "MANUAL.txt").read_text().replace("\n", "\r\n"))
     write(d / "LICENSE.txt", (ROOT / "LICENSE").read_text().replace("\n", "\r\n"))
+    write(d / NOTICES, (ROOT / NOTICES).read_text().replace("\n", "\r\n"))
     out = OUT / f"text_killer-{VERSION}-windows-x86_64-setup.exe"
     run(["makensis", "-V2", f"-DVERSION={VERSION}", f"-DSRCDIR={d}", f"-DOUTFILE={out}", PKG / "windows/installer.nsi"])
+    # Some browsers and mail filters block direct .exe downloads; also ship it zipped.
+    with zipfile.ZipFile(out.with_suffix(".zip"), "w", zipfile.ZIP_DEFLATED) as zf:
+        info = zipfile.ZipInfo(out.name)
+        info.external_attr = 0o100755 << 16
+        info.compress_type = zipfile.ZIP_DEFLATED
+        zf.writestr(info, out.read_bytes())
 
 
 def build_mac_installer(work: Path):
@@ -310,11 +326,14 @@ def build_mac_installer(work: Path):
     write(d / "text_killer.1", sub((PKG / "text_killer.1").read_text()))
     copy(ROOT / "MANUAL.txt", d / "MANUAL.txt")
     copy(ROOT / "LICENSE", d / "LICENSE")
+    copy(ROOT / NOTICES, d / NOTICES)
     write(d / "README.txt", sub(README_MAC_INSTALLER).replace("@FOLDER@", d.name))
     zip_dir(d, OUT / f"{d.name}.zip")
 
 
 def main():
+    # The notices must match the dependencies being shipped.
+    run([sys.executable, PKG / "third_party_licenses.py", "--check"])
     missing = [str(p) for p in BINARIES.values() if not p.exists()]
     if missing:
         sys.exit("missing binaries (cross-compile first):\n  " + "\n  ".join(missing))

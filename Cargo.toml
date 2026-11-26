@@ -1,6 +1,6 @@
 [package]
 name = "text_killer"
-version = "1.3.0"
+version = "1.3.1"
 edition = "2021"
 description = "A terminal text editor with an IRC-inspired interface"
 license = "MIT"

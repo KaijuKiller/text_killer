@@ -35,3 +35,5 @@ Files in this folder
   macos/install.command   double-click installer for macOS
   macos/uninstall.command
   macos/build-pkg.sh      builds a native .pkg on a Mac with Apple's tools
+  third_party_licenses.py regenerates ../THIRD-PARTY-LICENSES.txt; run it
+                          after changing dependencies (the build checks it)

@@ -55,4 +55,4 @@ cargo build --release
 
 Press **F1** in the editor for key bindings. The full manual is in `MANUAL.txt`.
 
-License: MIT (see `LICENSE`).
+License: MIT (see [`LICENSE`](LICENSE)). Notices for the open-source components compiled into the program are in [`THIRD-PARTY-LICENSES.txt`](THIRD-PARTY-LICENSES.txt) (also shown by `text_killer --licenses`); regenerate it with `python3 packaging/third_party_licenses.py` after changing dependencies.

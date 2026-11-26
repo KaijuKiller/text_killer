@@ -12,7 +12,7 @@ mkdir -p "$ROOT/usr/local/bin" "$ROOT/usr/local/share/man/man1" "$ROOT/usr/local
 lipo -create bin/text_killer-arm64 bin/text_killer-x86_64 -output "$ROOT/usr/local/bin/text_killer"
 chmod 755 "$ROOT/usr/local/bin/text_killer"
 install -m 644 text_killer.1 "$ROOT/usr/local/share/man/man1/text_killer.1"
-install -m 644 MANUAL.txt LICENSE "$ROOT/usr/local/share/doc/text_killer/"
+install -m 644 MANUAL.txt LICENSE THIRD-PARTY-LICENSES.txt "$ROOT/usr/local/share/doc/text_killer/"
 install -m 755 uninstall.command "$ROOT/usr/local/share/doc/text_killer/uninstall.command"
 xattr -cr "$ROOT" 2>/dev/null || true
 pkgbuild --root "$ROOT" --identifier local.text_killer --version "$VERSION" \

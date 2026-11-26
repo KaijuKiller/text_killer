@@ -64,6 +64,7 @@ fn print_usage() {
          \x20                           .epub, .xlsx are converted) and exit\n\
          \x20   --convert INPUT OUTPUT  Convert between formats by extension, e.g.\n\
          \x20                           notes.md -> notes.odt, report.docx -> report.rtf\n\
+         \x20   --licenses              Print the license and third-party notices\n\
          \x20   -h, --help              Print this help\n\
          \x20   -V, --version           Print version",
         env!("CARGO_PKG_VERSION")
@@ -167,6 +168,17 @@ fn main() {
                     eprintln!("text_killer: {e}");
                     std::process::exit(1);
                 }
+                return;
+            }
+            "--licenses" if !only_files => {
+                use std::io::Write;
+                let text = format!(
+                    "text_killer {} is licensed under the MIT License:\n\n{}\n\n{}",
+                    env!("CARGO_PKG_VERSION"),
+                    include_str!("../LICENSE").trim_end(),
+                    include_str!("../THIRD-PARTY-LICENSES.txt")
+                );
+                let _ = io::stdout().lock().write_all(text.as_bytes());
                 return;
             }
             "-V" | "--version" if !only_files => {

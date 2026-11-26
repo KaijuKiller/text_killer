@@ -27,4 +27,5 @@ package() {
   install -Dm644 text_killer.desktop "$pkgdir/usr/share/applications/text_killer.desktop"
   install -Dm644 MANUAL.txt "$pkgdir/usr/share/doc/text_killer/MANUAL.txt"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/text_killer/LICENSE"
+  install -Dm644 THIRD-PARTY-LICENSES.txt "$pkgdir/usr/share/licenses/text_killer/THIRD-PARTY-LICENSES.txt"
 }

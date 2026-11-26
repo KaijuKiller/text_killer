@@ -94,6 +94,10 @@ FORMATS
   Assembly, Verilog, VHDL, GLSL/HLSL, Terraform, Nix, GraphQL, Protobuf,
   CMake, LaTeX, man pages and more (Options › Document › Language).
 
+LICENSES
+  text_killer is MIT-licensed. Run  text_killer --licenses  to see its license
+  and the notices of the open-source components it includes.
+
 Press any other key to close.";
 
 fn popup_block<'a>(t: &Theme, title: &str) -> Block<'a> {

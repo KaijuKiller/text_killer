@@ -35,7 +35,7 @@ $sudo mkdir -p "$prefix/bin" "$prefix/share/man/man1" "$prefix/share/application
 $sudo install -m 755 "$here/text_killer" "$bin"
 $sudo install -m 644 "$here/text_killer.1" "$man"
 $sudo install -m 644 "$here/text_killer.desktop" "$desktop"
-$sudo install -m 644 "$here/MANUAL.txt" "$here/LICENSE" "$doc/"
+$sudo install -m 644 "$here/MANUAL.txt" "$here/LICENSE" "$here/THIRD-PARTY-LICENSES.txt" "$doc/"
 echo "text_killer installed to $bin"
 case ":$PATH:" in
   *":$prefix/bin:"*) ;;
