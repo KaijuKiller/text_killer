@@ -180,7 +180,9 @@ TERMINAL
   colour). On Windows use Windows Terminal rather than the old console.
 
 BUILDING FROM SOURCE (OPTIONAL)
-  Requires the Rust toolchain (https://rustup.rs).
+  Requires the Rust toolchain (https://rustup.rs). The project pins the
+  Rust version it is tested with in rust-toolchain.toml; rustup downloads
+  that version automatically the first time you build.
          tar -xzf text_killer-src.tar.gz   (or unzip text_killer-src.zip)
          cd text_killer
          cargo build --release

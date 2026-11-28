@@ -1,0 +1,12 @@
+# Rust version used to build and test text_killer. rustup installs it
+# automatically when you build from source.
+[toolchain]
+channel = "1.100.1"
+components = ["clippy", "rust-src"]  # rust-src lists std's dependencies for the notices
+targets = [
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-musl",
+    "x86_64-pc-windows-gnu",
+    "x86_64-apple-darwin",
+    "aarch64-apple-darwin",
+]

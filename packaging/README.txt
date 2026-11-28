@@ -2,12 +2,12 @@ Building the text_killer release packages
 =========================================
 
 1. Cross-compile the five release binaries (from the project root). This
-   uses cargo-zigbuild, with Zig installed from PyPI:
+   uses cargo-zigbuild, with Zig installed from PyPI. rust-toolchain.toml
+   pins the Rust version and makes rustup install the needed targets and
+   the rust-src component (used for the standard library's notices):
 
      pip install ziglang
      cargo install cargo-zigbuild
-     rustup target add x86_64-unknown-linux-musl aarch64-unknown-linux-musl \
-         x86_64-pc-windows-gnu x86_64-apple-darwin aarch64-apple-darwin
      for t in x86_64-unknown-linux-musl aarch64-unknown-linux-musl \
               x86_64-pc-windows-gnu x86_64-apple-darwin aarch64-apple-darwin; do
        cargo zigbuild --release --target $t

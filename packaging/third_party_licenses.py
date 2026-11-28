@@ -88,6 +88,59 @@ def toolchain_paths():
     return rust_doc, zig
 
 
+def filter_std_packages(page: str, rust_doc: Path) -> str:
+    """Keeps only the dependency sections of packages the standard library
+    really uses. Newer toolchains list many tool-only packages in this file;
+    the authoritative list is the standard library's own Cargo.lock, which
+    comes with the `rust-src` component."""
+    lock = rust_doc.parent.parent.parent / "lib/rustlib/src/rust/library/Cargo.lock"
+    if not lock.exists():
+        raise SystemExit("rust-src is not installed (needed to list the standard library's dependencies): "
+                         "rustup component add rust-src")
+    import tomllib
+
+    used = {f'{p["name"]}-{p["version"]}' for p in tomllib.loads(lock.read_text())["package"] if "source" in p}
+    pieces = re.split(r"(?=<h3)", page)
+    kept = [pieces[0]]
+    listed = set()
+    for sec in pieces[1:]:
+        m = re.search(r"📦\s*([^<\s]+)", sec)
+        if m:
+            listed.add(m.group(1).strip())
+        if m and m.group(1).strip() not in used:
+            # Drop this package but keep whatever follows its section (e.g. a closing heading).
+            tail = re.search(r"<h2", sec)
+            if tail:
+                kept.append(sec[tail.start():])
+            continue
+        kept.append(sec)
+    return "".join(kept), sorted(used - listed)
+
+
+def std_extra_notices(ids):
+    """Downloads (without building) the given "name-version" crates into a
+    throwaway project and returns their license texts."""
+    import tempfile
+
+    pairs = [tuple(i.rsplit("-", 1)) for i in ids]
+    with tempfile.TemporaryDirectory(prefix="tk-std-notices-") as tmp:
+        t = Path(tmp)
+        deps = "\n".join(f'dep{n} = {{ package = "{name}", version = "={ver}" }}' for n, (name, ver) in enumerate(pairs))
+        (t / "Cargo.toml").write_text(f'[package]\nname = "notices"\nversion = "0.0.0"\nedition = "2021"\n\n[dependencies]\n{deps}\n')
+        (t / "src").mkdir()
+        (t / "src/lib.rs").write_text("")
+        meta = json.loads(subprocess.run(["cargo", "metadata", "--format-version", "1"], cwd=t, check=True,
+                                         capture_output=True, text=True).stdout)
+        out = []
+        for name, ver in pairs:
+            pkg = next(p for p in meta["packages"] if p["name"] == name and p["version"] == ver)
+            texts = license_texts(Path(pkg["manifest_path"]).parent)
+            if not texts:
+                raise SystemExit(f"no license text found for standard library dependency {name} {ver}")
+            out.append(((name, ver), pkg.get("license") or "", texts))
+        return out
+
+
 def html_to_text(s: str) -> str:
     # License texts in <pre> blocks repeat (often the same Apache text many
     # times): show Apache via Appendix A and every other text only once.
@@ -176,8 +229,10 @@ def generate() -> str:
     parts += ["", "", RULE, "2. RUNTIME CODE LINKED INTO THE PROGRAM BY THE TOOLCHAIN", RULE, ""]
     parts += [THIN, "Rust standard library (all builds)  [Apache-2.0 OR MIT]", THIN, ""]
     std_copyright = rust_doc / "COPYRIGHT-library.html"
+    missing = []
     if std_copyright.exists():
-        parts.append(html_to_text(std_copyright.read_text()))
+        page, missing = filter_std_packages(std_copyright.read_text(), rust_doc)
+        parts.append(html_to_text(page))
     else:
         parts.append("Copyright: The Rust Project Developers (see https://thanks.rust-lang.org)")
     # Texts of the licenses named above (Apache-2.0 is in Appendix A).
@@ -186,6 +241,15 @@ def generate() -> str:
         f = rust_doc / "licenses" / fname
         if f.exists():
             parts += ["", f"--- {title} ---", "", norm(f.read_text())]
+
+    if missing:
+        parts += ["", THIN, "Standard library dependencies not listed in the notice above", THIN, "",
+                  "The Rust standard library also uses these packages (from its own Cargo.lock),",
+                  "which the toolchain's notice file does not list. Their notices follow."]
+        for (name, ver), lic, texts in std_extra_notices(missing):
+            parts += ["", f"{name} {ver}  [{lic}]"]
+            for fname, t in texts:
+                parts += ["", f"--- {fname} ---", "", t]
 
     if zig:
         libc = zig / "lib/libc"
