@@ -281,20 +281,25 @@ def build_arch(work: Path):
     write(OUT / "PKGBUILD", pkgbuild)
     for t in tarballs.values():
         shutil.copyfile(t, d / t.name)
-    # makepkg refuses to run as root; use the unprivileged "builder" account.
-    shutil.chown(d, "builder", "builder")
-    for p in d.iterdir():
-        shutil.chown(p, "builder", "builder")
+    # makepkg refuses to run as root. As root (e.g. in a container), use the
+    # unprivileged "builder" account; as a normal user (e.g. CI), run it directly.
+    as_root = os.geteuid() == 0
+    if as_root:
+        shutil.chown(d, "builder", "builder")
+        for p in d.iterdir():
+            shutil.chown(p, "builder", "builder")
     conf = Path("/etc/makepkg.conf").read_text()
     for carch in ("x86_64", "aarch64"):
         c = re.sub(r'^CARCH=.*$', f'CARCH="{carch}"', conf, flags=re.M)
         c = re.sub(r'^CHOST=.*$', f'CHOST="{carch}-pc-linux-gnu"', c, flags=re.M)
         c = re.sub(r"^PKGEXT=.*$", "PKGEXT='.pkg.tar.zst'", c, flags=re.M)
         write(d / f"makepkg-{carch}.conf", c)
-        shutil.chown(d / f"makepkg-{carch}.conf", "builder", "builder")
-        run(["su", "builder", "-c",
-             f"cd {d} && PACKAGER='kaiju_killer <text_killer@localhost>' makepkg --config makepkg-{carch}.conf -f --nodeps --noconfirm"],
-            stdout=subprocess.DEVNULL)
+        cmd = f"cd {d} && PACKAGER='kaiju_killer <text_killer@localhost>' makepkg --config makepkg-{carch}.conf -f --nodeps --noconfirm"
+        if as_root:
+            shutil.chown(d / f"makepkg-{carch}.conf", "builder", "builder")
+            run(["su", "builder", "-c", cmd], stdout=subprocess.DEVNULL)
+        else:
+            run(["sh", "-c", cmd], stdout=subprocess.DEVNULL)
     for p in d.glob("*.pkg.tar.zst"):
         shutil.copyfile(p, OUT / p.name)
 

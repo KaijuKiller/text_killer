@@ -80,7 +80,7 @@ Section "text_killer" SecMain
   StrLen $2 $0
   ${If} $2 > ${PATH_LIMIT}
     DetailPrint "PATH is long; not modified. Add $INSTDIR to PATH manually."
-    MessageBox MB_ICONINFORMATION|MB_OK "Your PATH is too long to update safely.$\r$\nTo run text_killer from any terminal, add this folder to PATH:$\r$\n$\r$\n$INSTDIR"
+    MessageBox MB_ICONINFORMATION|MB_OK "Your PATH is too long to update safely.$\r$\nTo run text_killer from any terminal, add this folder to PATH:$\r$\n$\r$\n$INSTDIR" /SD IDOK
   ${Else}
     ${StrStr} $1 ";$0;" ";$INSTDIR;"
     ${If} $1 == ""

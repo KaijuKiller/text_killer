@@ -1,0 +1,243 @@
+# Builds every release package, installs and removes each kind on a real
+# machine, then creates a DRAFT GitHub release with all files attached.
+# Nothing is published until you review the draft and press "Publish".
+#
+# Start it by pushing a version tag that matches Cargo.toml:
+#     git tag v1.4.0 && git push origin v1.4.0
+# It can also be run from the Actions tab (it then builds and tests but
+# creates no release), to try the packages before tagging.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build packages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read version
+        id: version
+        run: |
+          v=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -n1)
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = tag ] && [ "${GITHUB_REF_NAME}" != "v$v" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match Cargo.toml version $v"
+            exit 1
+          fi
+
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends nsis rpm makepkg libarchive-tools zstd fakeroot
+          python3 -m pip install --user --break-system-packages ziglang==0.17.1
+
+      - name: Install Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          cache-all-crates: true
+
+      - name: Install cargo-zigbuild
+        run: cargo install --locked cargo-zigbuild --version 0.24.1
+
+      - name: Cross-compile
+        run: |
+          for t in x86_64-unknown-linux-musl aarch64-unknown-linux-musl \
+                   x86_64-pc-windows-gnu x86_64-apple-darwin aarch64-apple-darwin; do
+            cargo zigbuild --locked --release --target "$t"
+          done
+
+      - name: Build packages
+        run: python3 packaging/build_packages.py
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: packages
+          path: dist/${{ steps.version.outputs.version }}/
+          retention-days: 7
+          if-no-files-found: error
+
+  test-windows:
+    name: Test Windows installer
+    needs: build
+    runs-on: windows-latest
+    timeout-minutes: 10
+    env:
+      V: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packages
+      - name: Install, run and uninstall
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = "$env:LOCALAPPDATA\Programs\text_killer"
+          $key = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\text_killer'
+          Start-Process ".\text_killer-$env:V-windows-x86_64-setup.exe" -ArgumentList '/S' -Wait
+          foreach ($f in 'text_killer.exe','MANUAL.txt','LICENSE.txt','THIRD-PARTY-LICENSES.txt','uninstall.exe') {
+            if (-not (Test-Path "$dir\$f")) { throw "missing after install: $f" }
+          }
+          $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+          if (-not ($userPath -split ';' -contains $dir)) { throw "install folder not added to PATH: $userPath" }
+          if ((Get-ItemProperty $key).DisplayVersion -ne $env:V) { throw 'uninstall entry missing or wrong version' }
+          $out = & "$dir\text_killer.exe" --version
+          if ($out -notmatch [regex]::Escape($env:V)) { throw "unexpected --version output: $out" }
+          Set-Content in.md "# Title`n`nSome **bold** text."
+          & "$dir\text_killer.exe" --convert in.md out.docx
+          if ((& "$dir\text_killer.exe" --cat out.docx) -notcontains '# Title') { throw 'conversion failed' }
+
+          Start-Process "$dir\uninstall.exe" -ArgumentList '/S' -Wait
+          # The uninstaller hands off to a temporary copy of itself; wait for it.
+          for ($i = 0; $i -lt 60 -and (Test-Path "$dir\text_killer.exe"); $i++) { Start-Sleep 1 }
+          if (Test-Path "$dir\text_killer.exe") { throw 'program still present after uninstall' }
+          if (Test-Path $key) { throw 'uninstall entry still present' }
+          $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+          if ($userPath -and ($userPath -split ';' -contains $dir)) { throw 'PATH entry not removed' }
+          Write-Host 'Windows installer OK'
+      - name: Portable zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Expand-Archive "text_killer-$env:V-windows-x86_64.zip" portable
+          & "portable\text_killer-$env:V-windows-x86_64\text_killer.exe" --version
+
+  test-macos:
+    name: Test macOS installers
+    needs: build
+    runs-on: macos-latest
+    timeout-minutes: 10
+    env:
+      V: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packages
+      - name: install.command and uninstall.command
+        run: |
+          set -euo pipefail
+          ditto -x -k "text_killer-$V-macos-installer.zip" .
+          cd "text_killer-$V-macos-installer"
+          bash install.command < /dev/null
+          /usr/local/bin/text_killer --version | grep -F "$V"
+          test -f /usr/local/share/man/man1/text_killer.1
+          bash /usr/local/share/doc/text_killer/uninstall.command < /dev/null
+          test ! -e /usr/local/bin/text_killer
+      - name: build-pkg.sh and the .pkg
+        run: |
+          set -euo pipefail
+          cd "text_killer-$V-macos-installer"
+          bash build-pkg.sh
+          sudo installer -pkg "text_killer-$V-macos.pkg" -target /
+          pkgutil --pkg-info local.text_killer
+          lipo -archs /usr/local/bin/text_killer | grep -q arm64
+          lipo -archs /usr/local/bin/text_killer | grep -q x86_64
+          /usr/local/bin/text_killer --version | grep -F "$V"
+          bash /usr/local/share/doc/text_killer/uninstall.command < /dev/null
+          test ! -e /usr/local/bin/text_killer
+      - name: Portable zips
+        run: |
+          set -euo pipefail
+          for z in apple-silicon intel; do ditto -x -k "text_killer-$V-macos-$z.zip" .; done
+          "text_killer-$V-macos-apple-silicon/text_killer" --version
+          # The Intel build runs here through Rosetta when it is available.
+          "text_killer-$V-macos-intel/text_killer" --version || echo "Rosetta not available; skipped"
+
+  test-linux:
+    name: Test Linux packages (${{ matrix.arch }})
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { arch: x86_64, runner: ubuntu-24.04, deb: amd64, rpm: x86_64, pac: x86_64, tar: x86_64, archimg: "archlinux:latest" }
+          - { arch: arm64, runner: ubuntu-24.04-arm, deb: arm64, rpm: aarch64, pac: aarch64, tar: arm64, archimg: "" }
+    env:
+      V: ${{ needs.build.outputs.version }}
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packages
+      - name: .deb
+        run: |
+          set -euo pipefail
+          sudo apt-get install -y -qq "./text-killer_${V}_${{ matrix.deb }}.deb"
+          text_killer --version | grep -F "$V"
+          dpkg -L text-killer | grep -q man1/text_killer.1
+          sudo apt-get remove -y -qq text-killer
+          test ! -e /usr/bin/text_killer
+      - name: .rpm (Fedora)
+        run: |
+          docker run --rm -v "$PWD:/p" -w /p -e V fedora:latest sh -euc '
+            dnf install -y -q "./text_killer-${V}-1.${{ matrix.rpm }}.rpm"
+            text_killer --version | grep -F "$V"
+            dnf remove -y -q text_killer
+            test ! -e /usr/bin/text_killer'
+      - name: Arch package
+        if: matrix.archimg != ''
+        run: |
+          docker run --rm -v "$PWD:/p" -w /p -e V ${{ matrix.archimg }} sh -euc '
+            pacman -U --noconfirm "./text_killer-bin-${V}-1-${{ matrix.pac }}.pkg.tar.zst"
+            text_killer --version | grep -F "$V"
+            pacman -R --noconfirm text_killer-bin
+            test ! -e /usr/bin/text_killer'
+      - name: Arch package (contents only; no official ARM Arch image)
+        if: matrix.archimg == ''
+        run: |
+          set -euo pipefail
+          tar --zstd -tf "text_killer-bin-${V}-1-${{ matrix.pac }}.pkg.tar.zst" | grep -qx usr/bin/text_killer
+          tar --zstd -xOf "text_killer-bin-${V}-1-${{ matrix.pac }}.pkg.tar.zst" .PKGINFO | grep -qx "arch = ${{ matrix.pac }}"
+      - name: Portable tarball and install.sh
+        run: |
+          set -euo pipefail
+          tar -xzf "text_killer-${V}-linux-${{ matrix.tar }}.tar.gz"
+          cd "text_killer-${V}-linux-${{ matrix.tar }}"
+          sudo ./install.sh
+          text_killer --version | grep -F "$V"
+      - name: Checksums
+        run: sha256sum -c SHA256SUMS.txt
+
+  publish:
+    name: Create draft release
+    if: github.ref_type == 'tag'
+    needs: [build, test-windows, test-macos, test-linux]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    env:
+      V: ${{ needs.build.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: packages
+          path: dist
+      - name: Create the draft
+        run: |
+          sed "s/@VERSION@/$V/g" packaging/release_notes.md.in > notes.md
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag \
+            --title "text_killer $V" --notes-file notes.md dist/*

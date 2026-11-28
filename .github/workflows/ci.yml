@@ -1,0 +1,94 @@
+# Builds and tests text_killer on Linux, Windows and macOS.
+#
+# Runs on pushes to main that change code or packaging (documentation-only
+# changes are skipped), and on demand from the Actions tab. Free for public
+# repositories; each job has a time limit so a hung run can't use up minutes.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "rust-toolchain.toml"
+      - "LICENSE"
+      - "THIRD-PARTY-LICENSES.txt"
+      - "packaging/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+# A newer push cancels a run still in progress for an older one.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # rust-toolchain.toml pins the Rust version; rustup installs it here.
+      - name: Install Rust toolchain
+        shell: bash
+        run: rustup show active-toolchain || rustup toolchain install
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+
+      - name: Tests
+        run: cargo test --locked
+
+      - name: Lint
+        run: cargo clippy --locked --all-targets -- -D warnings
+
+      - name: Build release
+        run: cargo build --locked --release
+
+      - name: Smoke test the program
+        shell: bash
+        run: |
+          set -euo pipefail
+          exe=target/release/text_killer
+          [ -f "$exe.exe" ] && exe="$exe.exe"
+          "$exe" --version
+          "$exe" --licenses | grep -q "Copyright (c) 2026 kaiju_killer"
+          mkdir -p smoke
+          printf '# Title\n\nSome **bold** and *italic* text.\n\n- one\n  - two\n\f\nAfter the break\n' > smoke/in.md
+          for ext in odt docx rtf; do
+            "$exe" --convert smoke/in.md "smoke/out.$ext"
+            "$exe" --cat "smoke/out.$ext" > "smoke/back-$ext.md"
+            # Headings, bold, nested bullets and the page break survive the round trip.
+            grep -q '^# Title' "smoke/back-$ext.md"
+            grep -q '\*\*bold\*\*' "smoke/back-$ext.md"
+            grep -q '^  - two' "smoke/back-$ext.md"
+            grep -q $'^\f$' "smoke/back-$ext.md"
+          done
+          echo "conversions OK"
+
+  notices:
+    name: License notices up to date
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Install Zig (provides the musl / mingw-w64 notices)
+        run: python3 -m pip install --user --break-system-packages ziglang==0.17.1
+      - name: Check THIRD-PARTY-LICENSES.txt
+        run: python3 packaging/third_party_licenses.py --check
