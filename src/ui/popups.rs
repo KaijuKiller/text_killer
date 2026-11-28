@@ -42,11 +42,11 @@ VIEW
   F4 line numbers  F5 window list  F7 whitespace  F8 next theme  F9 mouse
   Options › View › Theme picks a theme (Crimson is the default)
 
-PAGE VIEW (on by default: Options › View › Page view)
-  Documents are shown as US Letter pages (65 x 54 characters) side by side,
-  as many as fit (Auto, up to 12) or a fixed 1-8. Page scaling \"Fill window\"
-  stretches the pages to use the whole window. Off restores the original
-  continuous view; \"Wrap long lines\" wraps text in that view.
+PAGE VIEW (off by default; turn on in Options › View › Page view, or /pages)
+  Shows documents as US Letter pages (65 x 54 characters) side by side, as
+  many as fit (Auto, up to 12) or a fixed 1-8. Page scaling \"Fill window\"
+  stretches the pages to use the whole window. Off is the continuous view;
+  \"Wrap long lines\" wraps text in that view.
   ↑↓ move by screen row  PgUp/PgDn one page  Alt-PgUp/PgDn a whole spread
   Home/End go to the row start/end first, then the line start/end
   Mouse wheel scrolls the spread, then turns pages. Page size: A4, Legal...

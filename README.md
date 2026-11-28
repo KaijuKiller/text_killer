@@ -32,7 +32,7 @@ cargo build --release
 
 ## Features
 
-* **Page view** (default): documents laid out as US Letter pages (65×54 characters) side by side, as many as fit (Auto, up to 12) or a fixed number. Pages can be shown at actual size or stretched to fill the window (Page scaling). A4, Legal, A5, Wide and custom sizes. Off restores the original continuous view, which can optionally soft-wrap long lines.
+* **Page view** (optional; the continuous view is the default): documents laid out as US Letter pages (65×54 characters) side by side, as many as fit (Auto, up to 12) or a fixed number. Pages can be shown at actual size or stretched to fill the window (Page scaling). A4, Legal, A5, Wide and custom sizes. The continuous view can optionally soft-wrap long lines.
 * **Page breaks** (Alt+Enter) that become real page breaks in .odt, .docx and .rtf.
 * **Saved settings**: optionally remember the theme and/or the page view and layout across sessions (Options › Settings).
 * Left sidebar lists open documents like an IRC client's channel list (F6 to focus, Alt-1..9 to jump).
@@ -51,7 +51,7 @@ cargo build --release
 | ![Four pages on an ultrawide, with a page break](docs/screenshots/pages-ultra.png) | ![Actual size vs. fill window](docs/screenshots/page-scaling.png) |
 | Four pages on an ultrawide, with a page break | Page scaling: actual size vs. fill window |
 | ![Six of the eleven themes](docs/screenshots/themes.png) | ![The continuous view](docs/screenshots/editor.png) |
-| Six of the eleven themes | The original continuous view |
+| Six of the eleven themes | The continuous view (the default) |
 
 Press **F1** in the editor for key bindings. The full manual is in `MANUAL.txt`.
 

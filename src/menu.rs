@@ -240,7 +240,7 @@ pub fn items(s: SubMenu, ctx: MenuCtx) -> Vec<MenuItem> {
         ],
         SubMenu::PageView => {
             let mut modes = vec![
-                ("Off (original continuous view)".to_owned(), PageMode::Off),
+                ("Off (continuous view, the default)".to_owned(), PageMode::Off),
                 ("Auto (as many pages as fit)".to_owned(), PageMode::Auto),
             ];
             for n in 1..=8u8 {
@@ -419,7 +419,7 @@ mod tests {
         m.enter(SubMenu::View);
         assert_eq!(m.items[0].action, Action::Submenu(SubMenu::Theme));
         m.enter(SubMenu::PageView);
-        assert_eq!(m.selected(), 1, "Auto is the default page mode");
+        assert_eq!(m.selected(), 1, "the current page mode (Auto here) is highlighted");
         m.back();
         m.enter(SubMenu::Theme);
         assert_eq!(m.selected(), 2);

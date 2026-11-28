@@ -274,8 +274,9 @@ EDITOR (centre)
   (toggle it with F4). The current line number is highlighted. Rows below the
   end of the document are marked with "~".
 
-By default the editor area shows the document as pages side by side
-instead of one long column (see "PAGE VIEW" in section 18):
+By default the editor area shows the document as one continuous column,
+as above. Page view (Options > View > Page view; see "PAGE VIEW" in section
+18) shows it as pages side by side instead:
 
   │   ┌──────────────────────┐  ┌──────────────────────┐
   │   │ # Chapter Three      │  │ wasn't going to stop │
@@ -697,7 +698,7 @@ MENU CONTENTS (shortcut shown on the right in the program)
     Spaces -> tabs
   View
     Theme          > pick a colour theme (see section 18)
-    Page view      > Off (original continuous view), Auto, 1 to 8 pages
+    Page view      > Off (continuous view, the default), Auto, 1 to 8 pages
     Page size      > Letter, A4, Legal, A5, Wide (80 columns)
     Page scaling   > Actual size (true pages), Fill window
     [x] Wrap long lines (page view off)
@@ -1083,8 +1084,10 @@ THEMES
   nearest colours they can, which may look different.
 
 PAGE VIEW
-  By default text_killer shows documents as pages, like a word processor's
-  side-by-side view. A page is 65 characters wide and 54 lines tall: US
+  Page view shows documents as pages, like a word processor's side-by-side
+  view. It is off by default (the continuous view); turn it on with
+  Options > View > Page view or /pages auto, and turn on "Remember page
+  view & layout" (Options > Settings) to keep it on. A page is 65 characters wide and 54 lines tall: US
   Letter (8.5 x 11 in) with 1 in margins at typewriter spacing (10
   characters and 6 lines per inch). Text wraps at word boundaries and flows
   from the bottom of one page to the top of the next. Each page shows its
@@ -1092,7 +1095,7 @@ PAGE VIEW
   highlighted border.
 
   How many pages (Options > View > Page view, or /pages):
-    Auto (default)  As many as fit side by side, up to 12. Each page needs
+    Auto            As many as fit side by side, up to 12. Each page needs
                     69 columns plus a 2-column gap, so a typical 1080p
                     window (about 200 columns) shows 2 pages, 1440p shows 3,
                     a 3440-pixel ultrawide 4 and a 5120-pixel super-
@@ -1100,7 +1103,7 @@ PAGE VIEW
                     whenever the window is resized.
     1 to 8          Exactly that many, fewer if they don't fit (the menu
                     offers 1-8; /pages accepts up to 12).
-    Off             The original continuous view: one long column with line
+    Off (default)   The continuous view: one long column with line
                     numbers and horizontal scrolling for long lines.
   If not even one page fits (about 70 columns plus the sidebar), the
   continuous view is used automatically and the status bar says "pages:
@@ -1195,7 +1198,8 @@ OTHER VISUAL AIDS
     and are handled correctly for cursor movement and clicking.
 
 Unless remembered (see SAVED SETTINGS above), each start uses the defaults:
-Crimson theme, page view Auto with actual-size Letter pages, wrap off, line numbers on,
+Crimson theme, page view off (Letter pages at actual size when turned on),
+wrap off, line numbers on,
 sidebar on, whitespace off, mouse on, OSC 52 on.
 
 

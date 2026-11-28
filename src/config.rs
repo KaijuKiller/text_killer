@@ -134,7 +134,7 @@ impl Default for Settings {
             whitespace: false,
             mouse: true,
             theme: 0,
-            page_mode: PageMode::Auto,
+            page_mode: PageMode::Off,
             page_size: PageSize::LETTER,
             page_scale: PageScale::Actual,
             wrap: false,
@@ -267,10 +267,10 @@ mod tests {
     use super::*;
 
     #[test]
-    fn defaults_are_crimson_and_letter_pages() {
+    fn defaults_are_crimson_and_continuous_view() {
         let s = Settings::default();
         assert_eq!(s.theme, 0);
-        assert_eq!(s.page_mode, PageMode::Auto);
+        assert_eq!(s.page_mode, PageMode::Off);
         assert_eq!(s.page_size, PageSize { cols: 65, rows: 54 });
         assert!(!s.remember_theme && !s.remember_layout);
     }
@@ -294,7 +294,7 @@ mod tests {
         let mut t = Settings::default();
         t.apply(&format!("{text}\npage_view = 3\n"));
         assert_eq!(t.theme, 3);
-        assert_eq!(t.page_mode, PageMode::Auto);
+        assert_eq!(t.page_mode, PageMode::Off);
 
         s.remember_layout = true;
         let mut u = Settings::default();
